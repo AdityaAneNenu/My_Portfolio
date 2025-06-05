@@ -32,7 +32,13 @@ body {
   overflow-x: hidden;
   font-family: 'Rajdhani', sans-serif;
   position: relative;
-  cursor: none;
+}
+
+/* Only hide cursor on desktop */
+@media (min-width: 768px) {
+  body {
+    cursor: none;
+  }
 }
 
 /* Custom cursor - Simple and smooth */
@@ -100,59 +106,15 @@ body {
   background: linear-gradient(45deg, rgb(var(--neon-purple)), rgb(var(--neon-cyan)));
 }
 
-/* Animated Background Particles */
-.particles {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: -1;
-}
+/* Simplified animations for better performance */
 
-.particle {
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  background: rgba(var(--neon-cyan), 0.6);
-  border-radius: 50%;
-  animation: float 6s ease-in-out infinite;
-}
-
-.particle:nth-child(2n) {
-  background: rgba(var(--neon-purple), 0.6);
-  animation-duration: 8s;
-  animation-delay: -2s;
-}
-
-.particle:nth-child(3n) {
-  background: rgba(var(--neon-blue), 0.6);
-  animation-duration: 10s;
-  animation-delay: -4s;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-    opacity: 0.6;
-  }
-  50% {
-    transform: translateY(-20px) rotate(180deg);
-    opacity: 1;
-  }
-}
-
-/* 3D Blob Animations */
+/* Simplified blob animations */
 @keyframes blob-float {
   0%, 100% {
-    transform: translate(0px, 0px) scale(1) rotate(0deg);
+    transform: translate(0px, 0px) scale(1);
   }
-  33% {
-    transform: translate(30px, -30px) scale(1.1) rotate(120deg);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9) rotate(240deg);
+  50% {
+    transform: translate(20px, -20px) scale(1.05);
   }
 }
 
@@ -165,26 +127,22 @@ body {
   }
 }
 
-@keyframes glow-pulse {
-  0%, 100% {
-    filter: blur(20px) brightness(1);
-    opacity: 0.8;
-  }
-  50% {
-    filter: blur(25px) brightness(1.2);
-    opacity: 1;
-  }
-}
-
 @layer components {
   .glass-card {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8
-           transition-all duration-500 ease-out hover:scale-[1.02]
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-4 md:p-8
+           transition-all duration-300 ease-out
            hover:border-white/20 hover:bg-white/10
            relative overflow-hidden;
     box-shadow:
       0 8px 32px rgba(0, 0, 0, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  /* Reduce hover effects on mobile */
+  @media (min-width: 768px) {
+    .glass-card:hover {
+      transform: scale(1.02);
+    }
   }
 
   .glass-card::before {
@@ -203,8 +161,8 @@ body {
   }
 
   .liquid-button {
-    @apply relative px-8 py-4 rounded-full text-white font-medium
-           transition-all duration-300 ease-out hover:scale-105
+    @apply relative px-6 py-3 md:px-8 md:py-4 rounded-full text-white font-medium
+           transition-all duration-300 ease-out
            border border-white/20 backdrop-blur-sm overflow-hidden;
     background: linear-gradient(135deg,
       rgba(var(--orange-glow), 0.8) 0%,
@@ -212,6 +170,13 @@ body {
     box-shadow:
       0 8px 32px rgba(var(--orange-glow), 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  /* Scale effect only on desktop */
+  @media (min-width: 768px) {
+    .liquid-button:hover {
+      transform: scale(1.05);
+    }
   }
 
   .liquid-button::before {
@@ -281,19 +246,8 @@ body {
   .blob-bg {
     position: absolute;
     border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-    animation: blob-float 20s ease-in-out infinite, blob-morph 15s ease-in-out infinite;
-    filter: blur(40px);
-  }
-
-  .glow-border {
-    @apply border border-cyan-500/30 rounded-lg
-           shadow-[0_0_15px_rgba(0,255,255,0.3)]
-           hover:shadow-[0_0_25px_rgba(0,255,255,0.5)]
-           transition-all duration-300;
-  }
-
-  .floating-animation {
-    animation: floating 3s ease-in-out infinite;
+    animation: blob-float 25s ease-in-out infinite, blob-morph 20s ease-in-out infinite;
+    filter: blur(30px); /* Reduced blur for better performance */
   }
 
   .stagger-fade-in > * {
@@ -305,19 +259,6 @@ body {
   .stagger-fade-in > *:nth-child(2) { animation-delay: 0.2s; }
   .stagger-fade-in > *:nth-child(3) { animation-delay: 0.3s; }
   .stagger-fade-in > *:nth-child(4) { animation-delay: 0.4s; }
-  .stagger-fade-in > *:nth-child(5) { animation-delay: 0.5s; }
-  .stagger-fade-in > *:nth-child(6) { animation-delay: 0.6s; }
-  .stagger-fade-in > *:nth-child(7) { animation-delay: 0.7s; }
-  .stagger-fade-in > *:nth-child(8) { animation-delay: 0.8s; }
-}
-
-@keyframes floating {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
 }
 
 @keyframes fadeInUp {
@@ -331,15 +272,6 @@ body {
   }
 }
 
-@keyframes glow {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(0, 255, 255, 0.5), 0 0 10px rgba(0, 255, 255, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.5);
-  }
-}
-
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -349,45 +281,11 @@ body {
   }
 }
 
-@keyframes slideInLeft {
-  0% {
-    opacity: 0;
-    transform: translateX(-50px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInRight {
-  0% {
-    opacity: 0;
-    transform: translateX(50px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.animate-glow {
-  animation: glow 2s ease-in-out infinite;
-}
-
 .animate-pulse-slow {
   animation: pulse 3s ease-in-out infinite;
 }
 
-.animate-slide-in-left {
-  animation: slideInLeft 0.6s ease-out forwards;
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 0.6s ease-out forwards;
-}
-
-/* Missing futuristic styles */
+/* Optimized futuristic styles */
 .neon-text {
   background: linear-gradient(135deg,
     rgba(var(--blue-glow), 1) 0%,
@@ -396,51 +294,7 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 20px rgba(var(--blue-glow), 0.5));
-  /* Fallback for browsers that don't support background-clip: text */
   color: rgba(var(--blue-glow), 1);
-}
-
-/* Ensure neon text works properly */
-@supports (-webkit-background-clip: text) {
-  .neon-text {
-    color: transparent;
-  }
-}
-
-.futuristic-button {
-  @apply relative px-6 py-3 rounded-lg text-white font-medium
-         transition-all duration-300 ease-out hover:scale-105
-         border border-cyan-400/30 backdrop-blur-sm overflow-hidden;
-  background: linear-gradient(135deg,
-    rgba(var(--blue-glow), 0.8) 0%,
-    rgba(var(--purple-glow), 0.8) 100%);
-  box-shadow:
-    0 8px 32px rgba(var(--blue-glow), 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.futuristic-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg,
-    rgba(var(--purple-glow), 0.9) 0%,
-    rgba(var(--pink-glow), 0.9) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.futuristic-button:hover::before {
-  opacity: 1;
-}
-
-.futuristic-button span {
-  position: relative;
-  z-index: 1;
 }
 
 .futuristic-card {
