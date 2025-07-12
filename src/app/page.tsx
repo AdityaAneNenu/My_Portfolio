@@ -81,16 +81,16 @@ const HomeContent = () => {
     },
     {
       id: 4,
-      title: "Microsoft Stock Price Prediction using ML",
-      period: "Aug 2024 - Sep 2024",
-      description: "Built an end-to-end machine learning pipeline to predict Microsoft stock closing prices using advanced regression techniques and data visualization.",
+      title: "DreamScribe - AI-Powered Dream Journal",
+      period: "May 2025 - July 2025",
+      description: "DreamScribe is an AI-powered dream journal that helps users record, analyze, and understand their dreams through advanced insights and pattern recognition.",
       keyContributions: [
-        "Built end-to-end ML pipeline with Keras and Scikit-learn",
-        "Achieved 85% validation accuracy using linear regression and moving averages",
-        "Processed over 2,000 data points for comprehensive analysis",
-        "Implemented data visualization using Pandas and Matplotlib for trend analysis"
+        "Developed an AI-powered dream analysis system for comprehensive insights, including emotional breakdowns and symbol identification.",
+        "Built a cross-platform application (web, iOS, Android) from a single codebase using React Native and Expo.",
+        "Established a robust and secure backend with Supabase for user authentication, data storage, and real-time features.",
+        "Designed an intuitive user interface with features for seamless dream recording, interactive analytics, and a comprehensive symbol library."
       ],
-      techStack: ["Python", "Keras", "Scikit-learn", "Pandas", "Matplotlib", "Machine Learning"],
+      techStack: ["TypeScript", "React Native", "Expo", "Supabase", "PostgreSQL", "Lucide Icons"],
       icon: FaChartLine,
       color: "green",
       category: "AI/ML"
