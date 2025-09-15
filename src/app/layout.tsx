@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   description: 'Futuristic portfolio of Venkata Siva Lalitaaditya Duggi - B.Tech Computer Science student and Vice President of VIT-AP Newspaper Club. Experience the future of web design.',
   keywords: 'portfolio, computer science, web development, futuristic design, VIT-AP, technology',
   authors: [{ name: 'Venkata Siva Lalitaaditya Duggi' }],
+  verification: {
+    google: 'qub0blP6jmR_z4vPfwxZHoVgu63yf5aTU_RjD1hdwCc',
+  },
 }
 
 export const viewport = {
