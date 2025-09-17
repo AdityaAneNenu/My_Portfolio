@@ -6,9 +6,11 @@ import { motion } from 'framer-motion';
 export default function LiquidBackground() {
   const containerRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(true); // Start with mobile assumption
+  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
+    setHasMounted(true);
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -34,11 +36,11 @@ export default function LiquidBackground() {
   };
 
   // Significantly reduced particle count
-  const orbPositions = generatePositions(isMobile ? 2 : 3);
+  const orbPositions = generatePositions((!hasMounted || isMobile) ? 2 : 3);
 
   useEffect(() => {
     // Skip cursor effects on mobile for better performance
-    if (isMobile) return;
+    if (!hasMounted || isMobile) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (cursorRef.current) {
@@ -52,12 +54,12 @@ export default function LiquidBackground() {
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [isMobile]);
+  }, [hasMounted, isMobile]);
 
   return (
     <>
       {/* Custom Cursor - Only on desktop */}
-      {!isMobile && <div ref={cursorRef} className="custom-cursor" />}
+      {hasMounted && !isMobile && <div ref={cursorRef} className="custom-cursor" />}
 
       {/* Liquid Background Blobs */}
       <div ref={containerRef} className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -145,7 +147,7 @@ export default function LiquidBackground() {
         />
 
         {/* Simplified Floating Orbs - Desktop only */}
-        {!isMobile && orbPositions.map((pos, i) => (
+        {hasMounted && !isMobile && orbPositions.map((pos, i) => (
           <motion.div
             key={i}
             className="absolute w-2 h-2 rounded-full opacity-30"

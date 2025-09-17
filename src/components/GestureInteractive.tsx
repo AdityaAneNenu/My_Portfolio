@@ -15,7 +15,8 @@ export default function GestureInteractive({
   intensity = 1
 }: GestureInteractiveProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(true); // Start with mobile assumption
+  const [hasMounted, setHasMounted] = useState(false);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -27,6 +28,7 @@ export default function GestureInteractive({
   const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], [-15 * intensity, 15 * intensity]);
 
   useEffect(() => {
+    setHasMounted(true);
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -38,7 +40,7 @@ export default function GestureInteractive({
   }, []);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current || isMobile) return; // Skip on mobile for performance
+    if (!ref.current || !hasMounted || isMobile) return; // Skip on mobile for performance
 
     const rect = ref.current.getBoundingClientRect();
     const width = rect.width;
@@ -63,14 +65,14 @@ export default function GestureInteractive({
     <motion.div
       ref={ref}
       className={`relative ${className}`}
-      onMouseMove={isMobile ? undefined : handleMouseMove}
-      onMouseLeave={isMobile ? undefined : handleMouseLeave}
-      style={isMobile ? {} : {
+      onMouseMove={(!hasMounted || isMobile) ? undefined : handleMouseMove}
+      onMouseLeave={(!hasMounted || isMobile) ? undefined : handleMouseLeave}
+      style={(!hasMounted || isMobile) ? {} : {
         rotateX,
         rotateY,
         transformStyle: "preserve-3d",
       }}
-      whileHover={isMobile ? {} : {
+      whileHover={(!hasMounted || isMobile) ? {} : {
         scale: 1.05,
         transition: { duration: 0.3 }
       }}
@@ -95,9 +97,11 @@ export function MagneticElement({
 }: GestureInteractiveProps & { strength?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(true); // Start with mobile assumption
+  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
+    setHasMounted(true);
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -109,7 +113,7 @@ export function MagneticElement({
   }, []);
 
   useEffect(() => {
-    if (isMobile) return; // Skip on mobile
+    if (!hasMounted || isMobile) return; // Skip on mobile
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!ref.current) return;
@@ -137,17 +141,17 @@ export function MagneticElement({
 
     document.addEventListener('mousemove', handleMouseMove);
     return () => document.removeEventListener('mousemove', handleMouseMove);
-  }, [strength, isMobile]);
+  }, [strength, hasMounted, isMobile]);
 
   return (
     <motion.div
       ref={ref}
       className={className}
-      animate={isMobile ? {} : {
+      animate={(!hasMounted || isMobile) ? {} : {
         x: position.x,
         y: position.y,
       }}
-      transition={isMobile ? {} : {
+      transition={(!hasMounted || isMobile) ? {} : {
         type: "spring",
         stiffness: 150,
         damping: 25,

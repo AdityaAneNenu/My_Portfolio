@@ -14,8 +14,10 @@ const HomeContent = () => {
   const searchParams = useSearchParams()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [hasMounted, setHasMounted] = useState(false)
 
   useEffect(() => {
+    setHasMounted(true)
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
@@ -112,6 +114,15 @@ const HomeContent = () => {
       }, 100)
     }
   }, [searchParams])
+
+  // Don't render until client has mounted to prevent hydration mismatch
+  if (!hasMounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-300"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -443,10 +454,10 @@ const HomeContent = () => {
             </div>
             <div className="space-y-4">
               {[
-                { skill: 'Python', level: 95 },
-                { skill: 'Java', level: 85 },
-                { skill: 'MySQL', level: 80 },
-                { skill: 'HTML/CSS', level: 90 }
+                { skill: 'Python', level: 55 },
+                { skill: 'Java', level: 50 },
+                { skill: 'MySQL', level: 40 },
+                { skill: 'HTML/CSS', level: 70 }
               ].map((item, index) => (
                 <div key={item.skill} className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -479,10 +490,10 @@ const HomeContent = () => {
             </div>
             <div className="space-y-4">
               {[
-                { skill: 'TensorFlow', level: 90 },
-                { skill: 'PyTorch', level: 85 },
-                { skill: 'Keras', level: 88 },
-                { skill: 'Scikit-learn', level: 92 }
+                { skill: 'TensorFlow', level: 30 },
+                { skill: 'PyTorch', level: 45 },
+                { skill: 'Keras', level: 40 },
+                { skill: 'Scikit-learn', level: 35 }
               ].map((item, index) => (
                 <div key={item.skill} className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -515,9 +526,9 @@ const HomeContent = () => {
             </div>
             <div className="space-y-4">
               {[
-                { skill: 'VS Code', level: 95 },
-                { skill: 'Git/GitHub', level: 90 },
-                { skill: 'AWS Console', level: 85 },
+                { skill: 'VS Code', level: 75 },
+                { skill: 'Git/GitHub', level: 60 },
+                { skill: 'AWS Console', level: 35 },
                 { skill: 'Figma', level: 75 }
               ].map((item, index) => (
                 <div key={item.skill} className="space-y-2">
@@ -551,7 +562,7 @@ const HomeContent = () => {
             </div>
             <div className="space-y-3">
               {[
-                { cert: 'Crash Course on Python by Google', date: 'Dec 2023' },
+                { cert: 'Oracle Genrerative AI', date: 'July 2025' },
                 { cert: 'Digital Skills: AI by Accenture', date: 'Sep 2024' },
                 { cert: 'Microsoft Azure AI Fundamentals', date: 'Jul 2024' },
                 { cert: 'AWS Cloud Foundations', date: 'Sep 2024' }
@@ -602,9 +613,9 @@ const HomeContent = () => {
           <div className="space-y-12">
             {[
               {
-                title: 'Vice President',
+                title: 'President',
                 company: 'VIT-AP Newspaper Club',
-                period: 'Oct 2024 - Present',
+                period: 'Aug 2025 - Present',
                 description: 'Led initiatives combining creative writing and tech journalism. Organized interactive sessions on innovation and public speaking.',
                 icon: FaRocket,
                 color: 'cyan'
