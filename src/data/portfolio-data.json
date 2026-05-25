@@ -39,7 +39,6 @@
       "HTML/CSS"
     ],
     "AI / ML": [
-      "TensorFlow",
       "PyTorch",
       "Keras",
       "Scikit-learn",
@@ -236,54 +235,6 @@
       "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
       "stack": [
         "JavaScript"
-      ],
-      "github": "",
-      "demo": ""
-    },
-    {
-      "slug": "maska-tm",
-      "title": "Maska tm",
-      "subtitle": "Open Source Project",
-      "period": "2026",
-      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
-      "stack": [
-        "TypeScript"
-      ],
-      "github": "",
-      "demo": ""
-    },
-    {
-      "slug": "inavra",
-      "title": "Inavra",
-      "subtitle": "Open Source Project",
-      "period": "2026",
-      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
-      "stack": [
-        "Python"
-      ],
-      "github": "",
-      "demo": ""
-    },
-    {
-      "slug": "judixai",
-      "title": "Judixai",
-      "subtitle": "Open Source Project",
-      "period": "2026",
-      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
-      "stack": [
-        "TypeScript"
-      ],
-      "github": "",
-      "demo": ""
-    },
-    {
-      "slug": "fetal-movement-tracker",
-      "title": "Fetal movement tracker",
-      "subtitle": "Open Source Project",
-      "period": "2025",
-      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
-      "stack": [
-        "TypeScript"
       ],
       "github": "",
       "demo": ""

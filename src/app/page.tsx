@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { useEffect, Suspense, useState, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import TextReveal, { FadeUp } from '@/components/TextReveal'
@@ -34,14 +34,13 @@ const HomeContent = () => {
   const searchParams = useSearchParams()
   const [mounted, setMounted] = useState(false)
   const [activeSection, setActiveSection] = useState('')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
   const heroRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll()
-  const headerOpacity = useTransform(scrollYProgress, [0, 0.05], [0, 1])
-  const headerY = useTransform(scrollYProgress, [0, 0.05], [-20, 0])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -68,6 +67,29 @@ const HomeContent = () => {
     }
   }, [searchParams])
 
+  // Handle scroll effects: close mobile menu and track scroll position for navbar background
+  const [isScrolled, setIsScrolled] = useState(false)
+  useEffect(() => {
+    const handleScroll = () => {
+      if (mobileMenuOpen) setMobileMenuOpen(false)
+      setIsScrolled(window.scrollY > 10)
+    }
+    // Set initial scroll state
+    setIsScrolled(window.scrollY > 10)
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [mobileMenuOpen])
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [mobileMenuOpen])
+
   // Parallax effects
   const heroY = useTransform(scrollYProgress, [0, 0.2], [0, 150])
   const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0])
@@ -82,11 +104,19 @@ const HomeContent = () => {
 
       {/* ── Sticky Nav ──────────────────────────── */}
       <motion.nav
-        className="fixed top-0 left-0 right-0 z-50 bg-bg/80 backdrop-blur-md border-b border-border/50"
-        style={{ opacity: headerOpacity, y: headerY }}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled 
+            ? 'bg-bg/80 backdrop-blur-md border-b border-border/50 py-3' 
+            : 'bg-transparent border-b border-transparent py-4'
+        }`}
       >
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
           <a href="#" className="text-sm font-semibold tracking-widest text-fg">{HERO.initials}</a>
+          
+          {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
             {NAV_ITEMS.map(({ id, label }) => (
               <a
@@ -103,12 +133,79 @@ const HomeContent = () => {
               <ThemeToggle />
             </div>
           </div>
+
+          {/* Mobile Controls */}
+          <div className="flex md:hidden items-center gap-3">
+            <ThemeToggle />
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="relative w-8 h-8 flex items-center justify-center cursor-pointer"
+              aria-label="Toggle menu"
+            >
+              <motion.span
+                animate={mobileMenuOpen ? { rotate: 45, y: 0 } : { rotate: 0, y: -4 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute w-5 h-[1.5px] bg-fg block"
+              />
+              <motion.span
+                animate={mobileMenuOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
+                transition={{ duration: 0.2 }}
+                className="absolute w-5 h-[1.5px] bg-fg block"
+              />
+              <motion.span
+                animate={mobileMenuOpen ? { rotate: -45, y: 0 } : { rotate: 0, y: 4 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute w-5 h-[1.5px] bg-fg block"
+              />
+            </button>
+          </div>
         </div>
       </motion.nav>
 
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 z-40 bg-bg/60 backdrop-blur-sm md:hidden"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="fixed top-14 left-0 right-0 z-40 bg-bg border-b border-border md:hidden"
+            >
+              <div className="px-6 py-6 space-y-1">
+                {NAV_ITEMS.map(({ id, label }, i) => (
+                  <motion.a
+                    key={id}
+                    href={`#${id}`}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`block py-3 text-sm tracking-widest uppercase transition-colors duration-300 cursor-pointer ${
+                      activeSection === id ? 'text-accent font-semibold' : 'text-muted hover:text-fg'
+                    }`}
+                  >
+                    {label}
+                  </motion.a>
+                ))}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* ── Hero ────────────────────────────────── */}
-      <section ref={heroRef} className="min-h-[90vh] flex flex-col justify-center px-6 max-w-6xl mx-auto relative pt-20 pb-16 overflow-hidden">
-        <motion.div className="space-y-8" style={{ y: heroY, opacity: heroOpacity }}>
+      <section ref={heroRef} className="min-h-[90vh] flex flex-col justify-center px-4 sm:px-6 max-w-6xl mx-auto relative pt-20 pb-16 overflow-hidden">
+        <motion.div className="space-y-6 sm:space-y-8" style={{ y: heroY, opacity: heroOpacity }}>
           <motion.p
             className="text-xs tracking-[0.3em] uppercase text-muted"
             initial={{ opacity: 0 }}
@@ -118,7 +215,7 @@ const HomeContent = () => {
             {HERO.role}
           </motion.p>
 
-          <h1 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.9] tracking-tighter">
+          <h1 className="text-[clamp(2rem,8vw,7rem)] font-bold leading-[0.9] tracking-tighter">
             <TextReveal delay={0.4}>{firstName}</TextReveal>
             <br />
             <span className="text-accent">
@@ -127,27 +224,27 @@ const HomeContent = () => {
           </h1>
 
           <FadeUp delay={1.2}>
-            <p className="text-muted text-lg md:text-xl max-w-2xl leading-relaxed">
+            <p className="text-muted text-base sm:text-lg md:text-xl max-w-2xl leading-relaxed">
               {HERO.description}
             </p>
           </FadeUp>
 
           <FadeUp delay={1.5}>
-            <div className="flex flex-wrap gap-4 pt-6">
-              <MagneticButton href="#contact" className="text-sm font-semibold text-bg bg-accent border border-accent px-8 py-4
+            <div className="flex flex-wrap gap-3 sm:gap-4 pt-4 sm:pt-6">
+              <MagneticButton href="#contact" className="text-xs sm:text-sm font-semibold text-bg bg-accent border border-accent px-6 sm:px-8 py-3 sm:py-4
                 hover:bg-fg hover:border-fg transition-all duration-300 cursor-pointer tracking-widest uppercase">
                 Get in Touch
               </MagneticButton>
               {HERO.github && (
                 <MagneticButton href={HERO.github} target="_blank" rel="noopener noreferrer"
-                  className="text-sm font-medium text-fg border border-border px-8 py-4
+                  className="text-xs sm:text-sm font-medium text-fg border border-border px-6 sm:px-8 py-3 sm:py-4
                   hover:bg-fg hover:text-bg transition-all duration-300 cursor-pointer tracking-widest uppercase">
                   GitHub
                 </MagneticButton>
               )}
               {HERO.linkedin && (
                 <MagneticButton href={HERO.linkedin} target="_blank" rel="noopener noreferrer"
-                  className="text-sm font-medium text-fg border border-border px-8 py-4
+                  className="text-xs sm:text-sm font-medium text-fg border border-border px-6 sm:px-8 py-3 sm:py-4
                   hover:bg-fg hover:text-bg transition-all duration-300 cursor-pointer tracking-widest uppercase">
                   LinkedIn
                 </MagneticButton>
@@ -158,7 +255,7 @@ const HomeContent = () => {
 
         {/* Scroll indicator */}
         <motion.div
-          className="absolute bottom-10 left-6"
+          className="absolute bottom-10 left-4 sm:left-6 hidden sm:block"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2 }}
@@ -182,29 +279,29 @@ const HomeContent = () => {
       </div>
 
       {/* ── About ───────────────────────────────── */}
-      <section id="about" className="py-16 md:py-24 px-6 max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24">
+      <section id="about" className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-24">
           <div className="lg:col-span-4">
             <FadeUp>
               <p className="text-xs tracking-[0.3em] uppercase text-muted mb-4">About</p>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
                 Building at the intersection of AI & engineering.
               </h2>
             </FadeUp>
           </div>
-          <div className="lg:col-span-8 space-y-8">
+          <div className="lg:col-span-8 space-y-6 sm:space-y-8">
             {ABOUT.map((para, i) => (
               <FadeUp key={i} delay={0.2 + i * 0.1}>
-                <p className="text-muted text-lg leading-relaxed">
+                <p className="text-muted text-base sm:text-lg leading-relaxed">
                   {para}
                 </p>
               </FadeUp>
             ))}
             <FadeUp delay={0.4}>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-8 border-t border-border">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 pt-6 sm:pt-8 border-t border-border">
                 {STATS.map((stat) => (
                   <div key={stat.label}>
-                    <p className="text-3xl font-bold text-fg">{stat.value}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-fg">{stat.value}</p>
                     <p className="text-xs text-muted tracking-widest uppercase mt-1">{stat.label}</p>
                   </div>
                 ))}
@@ -215,18 +312,18 @@ const HomeContent = () => {
       </section>
 
       {/* ── Skills ──────────────────────────────── */}
-      <section id="skills" className="py-16 md:py-24 px-6 max-w-6xl mx-auto">
+      <section id="skills" className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
         <FadeUp>
           <p className="text-xs tracking-[0.3em] uppercase text-muted mb-4">Expertise</p>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-16">Skills & Technologies</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-10 sm:mb-16">Skills & Technologies</h2>
         </FadeUp>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
           {Object.entries(SKILLS).map(([category, skills], catIdx) => (
             <FadeUp key={category} delay={catIdx * 0.1}>
               <div>
-                <h3 className="text-xs tracking-[0.3em] uppercase text-accent mb-6">{category}</h3>
-                <ul className="space-y-3">
+                <h3 className="text-xs tracking-[0.3em] uppercase text-accent mb-4 sm:mb-6">{category}</h3>
+                <ul className="space-y-2 sm:space-y-3">
                   {skills.map((skill) => (
                     <li key={skill} className="text-muted hover:text-fg transition-colors duration-300 cursor-default text-sm">
                       {skill}
@@ -240,9 +337,9 @@ const HomeContent = () => {
 
         {/* Certifications */}
         <FadeUp delay={0.4}>
-          <div className="mt-20 pt-12 border-t border-border">
-            <h3 className="text-xs tracking-[0.3em] uppercase text-accent mb-6">Certifications</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="mt-14 sm:mt-20 pt-8 sm:pt-12 border-t border-border">
+            <h3 className="text-xs tracking-[0.3em] uppercase text-accent mb-4 sm:mb-6">Certifications</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               {CERTIFICATIONS.map((cert) => (
                 <p key={cert} className="text-muted text-sm hover:text-fg transition-colors duration-300">{cert}</p>
               ))}
@@ -252,23 +349,23 @@ const HomeContent = () => {
       </section>
 
       {/* ── Experience ──────────────────────────── */}
-      <section id="experience" className="py-16 md:py-24 px-6 max-w-6xl mx-auto">
+      <section id="experience" className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
         <FadeUp>
           <p className="text-xs tracking-[0.3em] uppercase text-muted mb-4">Career</p>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-16">Experience</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-10 sm:mb-16">Experience</h2>
         </FadeUp>
 
         <div className="space-y-0">
           {EXPERIENCE.map((exp, i) => (
             <FadeUp key={i} delay={i * 0.15}>
-              <SpotlightCard className="py-10 border-b border-border group">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8 px-4 -mx-4 group-hover:pl-6 transition-all duration-300 ease-out">
+              <SpotlightCard className="py-8 sm:py-10 border-b border-border group">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-8 px-2 sm:px-4 group-hover:pl-4 sm:group-hover:pl-6 transition-all duration-300 ease-out">
                   <div className="md:col-span-3">
                     <p className="text-xs text-muted tracking-widest uppercase mt-1">{exp.period}</p>
                   </div>
                   <div className="md:col-span-9">
-                    <h3 className="text-xl font-semibold text-fg mb-1 group-hover:text-accent transition-colors duration-300">{exp.title}</h3>
-                    <p className="text-accent text-sm mb-4">{exp.org}</p>
+                    <h3 className="text-lg sm:text-xl font-semibold text-fg mb-1 group-hover:text-accent transition-colors duration-300">{exp.title}</h3>
+                    <p className="text-accent text-sm mb-3 sm:mb-4">{exp.org}</p>
                     <p className="text-muted text-sm leading-relaxed">{exp.description}</p>
                   </div>
                 </div>
@@ -279,14 +376,14 @@ const HomeContent = () => {
       </section>
 
       {/* ── Projects ────────────────────────────── */}
-      <section id="projects" className="py-16 md:py-24 px-6 max-w-6xl mx-auto">
+      <section id="projects" className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
         <FadeUp>
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-16">
-            <div className="md:col-span-3">
+          <div className="flex flex-col sm:grid sm:grid-cols-12 gap-4 sm:gap-6 mb-10 sm:mb-16">
+            <div className="sm:col-span-3">
               <p className="text-xs tracking-[0.3em] uppercase text-muted pt-2">Work</p>
             </div>
-            <div className="md:col-span-9">
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Projects</h2>
+            <div className="sm:col-span-9">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">Projects</h2>
             </div>
           </div>
         </FadeUp>
@@ -294,30 +391,62 @@ const HomeContent = () => {
         <div className="space-y-0">
           {PROJECTS.slice(0, 3).map((project, i) => (
             <FadeUp key={project.slug} delay={i * 0.08}>
-              <Link href={`/projects/${project.slug}`} className="block py-12 border-b border-border group cursor-pointer hover:bg-fg/5 transition-colors duration-300">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                  <div className="md:col-span-3">
-                    <p className="text-xs text-muted tracking-widest uppercase mt-2 group-hover:text-accent transition-colors duration-300">{project.period}</p>
+              <div className="py-8 sm:py-12 border-b border-border group">
+                <Link href={`/projects/${project.slug}`} className="block cursor-pointer hover:bg-fg/5 transition-colors duration-300 -mx-2 px-2 sm:-mx-4 sm:px-4 py-2 sm:py-4">
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6">
+                    <div className="md:col-span-3">
+                      <p className="text-xs text-muted tracking-widest uppercase mt-2 group-hover:text-accent transition-colors duration-300">{project.period}</p>
+                    </div>
+                    <div className="md:col-span-9">
+                      <h3 className="text-2xl sm:text-4xl md:text-5xl font-bold text-fg mb-3 sm:mb-4 group-hover:pl-2 sm:group-hover:pl-4 transition-all duration-500 ease-out flex items-center gap-3 sm:gap-4">
+                        {project.title}
+                        <svg className="w-5 h-5 sm:w-8 sm:h-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </h3>
+                      <p className="text-xs sm:text-sm text-accent uppercase tracking-widest mb-3 sm:mb-4 group-hover:pl-2 sm:group-hover:pl-4 transition-all duration-500 ease-out delay-75">{project.subtitle}</p>
+                      <p className="text-muted text-sm leading-relaxed max-w-xl group-hover:pl-2 sm:group-hover:pl-4 transition-all duration-500 ease-out delay-100">{project.description}</p>
+                    </div>
                   </div>
-                  <div className="md:col-span-9">
-                    <h3 className="text-4xl md:text-5xl font-bold text-fg mb-4 group-hover:pl-4 transition-all duration-500 ease-out flex items-center gap-4">
-                      {project.title}
-                      <svg className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </h3>
-                    <p className="text-sm text-accent uppercase tracking-widest mb-4 group-hover:pl-4 transition-all duration-500 ease-out delay-75">{project.subtitle}</p>
-                    <p className="text-muted text-sm leading-relaxed max-w-xl group-hover:pl-4 transition-all duration-500 ease-out delay-100">{project.description}</p>
+                </Link>
+
+                {/* GitHub & Demo links */}
+                {(project.github || project.demo) && (
+                  <div className="flex gap-4 mt-4 md:ml-[25%] md:pl-0 pl-0">
+                    {project.github && (
+                      <a
+                        href={project.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-xs text-muted hover:text-accent transition-colors duration-300 flex items-center gap-1.5 tracking-widest uppercase"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        GitHub
+                      </a>
+                    )}
+                    {project.demo && (
+                      <a
+                        href={project.demo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-xs text-muted hover:text-accent transition-colors duration-300 flex items-center gap-1.5 tracking-widest uppercase"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                        Live Demo
+                      </a>
+                    )}
                   </div>
-                </div>
-              </Link>
+                )}
+              </div>
             </FadeUp>
           ))}
         </div>
 
         <FadeUp delay={0.3}>
-          <div className="mt-16 flex justify-center">
-            <MagneticButton href="/projects" className="text-sm font-semibold text-bg bg-accent border border-accent px-10 py-5
+          <div className="mt-12 sm:mt-16 flex justify-center">
+            <MagneticButton href="/projects" className="text-xs sm:text-sm font-semibold text-bg bg-accent border border-accent px-8 sm:px-10 py-4 sm:py-5
               hover:bg-fg hover:border-fg hover:text-bg transition-all duration-300 cursor-pointer tracking-widest uppercase">
               Show Me More
             </MagneticButton>
@@ -326,22 +455,22 @@ const HomeContent = () => {
       </section>
 
       {/* ── Achievements ────────────────────────── */}
-      <section id="achievements" className="py-16 md:py-24 px-6 max-w-6xl mx-auto">
+      <section id="achievements" className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
         <FadeUp>
           <p className="text-xs tracking-[0.3em] uppercase text-muted mb-4">Recognition</p>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-16">Achievements</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-10 sm:mb-16">Achievements</h2>
         </FadeUp>
 
         <div className="space-y-0">
           {ACHIEVEMENTS.map((item, i) => (
             <FadeUp key={i} delay={i * 0.1}>
-              <SpotlightCard className="py-8 border-b border-border group cursor-default">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8 px-4 -mx-4 group-hover:pl-6 transition-all duration-300 ease-out">
+              <SpotlightCard className="py-6 sm:py-8 border-b border-border group cursor-default">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-8 px-2 sm:px-4 group-hover:pl-4 sm:group-hover:pl-6 transition-all duration-300 ease-out">
                   <div className="md:col-span-3">
                     <p className="text-xs text-muted tracking-widest uppercase mt-1">{item.date}</p>
                   </div>
                   <div className="md:col-span-9">
-                    <div className="flex items-baseline gap-3 mb-2">
+                    <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 mb-2">
                       <span className="text-accent text-sm font-semibold">{item.title}</span>
                       <span className="text-fg text-sm group-hover:text-accent transition-colors duration-300">— {item.event}</span>
                     </div>
@@ -355,36 +484,36 @@ const HomeContent = () => {
       </section>
 
       {/* ── Contact ──────────────────────────────── */}
-      <section id="contact" className="py-16 md:py-24 px-6 max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
+      <section id="contact" className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-20">
           <div className="lg:col-span-5">
             <FadeUp>
               <p className="text-xs tracking-[0.3em] uppercase text-muted mb-4">Contact</p>
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-6 sm:mb-8">
                 Let&apos;s work<br/>together.
               </h2>
-              <p className="text-muted text-lg mb-12">
+              <p className="text-muted text-base sm:text-lg mb-8 sm:mb-12">
                 I&apos;m currently available for freelance work and full-time opportunities. If you have a project that needs some creative magic, I&apos;d love to hear about it.
               </p>
               
               <div className="space-y-6 pt-4">
-                <div className="space-y-6 text-sm">
+                <div className="space-y-4 sm:space-y-6 text-sm">
                   {HERO.email && (
-                    <a href={`mailto:${HERO.email}`} className="flex items-center gap-6 text-muted hover:text-accent transition-colors duration-300 group">
-                      <svg className="w-5 h-5 text-dim group-hover:text-accent transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                      {HERO.email}
+                    <a href={`mailto:${HERO.email}`} className="flex items-center gap-4 sm:gap-6 text-muted hover:text-accent transition-colors duration-300 group">
+                      <svg className="w-5 h-5 text-dim group-hover:text-accent transition-colors duration-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                      <span className="break-all">{HERO.email}</span>
                     </a>
                   )}
                   {HERO.github && (
-                    <a href={HERO.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-6 text-muted hover:text-accent transition-colors duration-300 group">
-                      <svg className="w-5 h-5 text-dim group-hover:text-accent transition-colors duration-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                      {HERO.github.replace('https://', '')}
+                    <a href={HERO.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 sm:gap-6 text-muted hover:text-accent transition-colors duration-300 group">
+                      <svg className="w-5 h-5 text-dim group-hover:text-accent transition-colors duration-300 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                      <span className="break-all">{HERO.github.replace('https://', '')}</span>
                     </a>
                   )}
                   {HERO.linkedin && (
-                    <a href={HERO.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-6 text-muted hover:text-accent transition-colors duration-300 group">
-                      <svg className="w-5 h-5 text-dim group-hover:text-accent transition-colors duration-300" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                      {HERO.linkedin.replace('https://', '')}
+                    <a href={HERO.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 sm:gap-6 text-muted hover:text-accent transition-colors duration-300 group">
+                      <svg className="w-5 h-5 text-dim group-hover:text-accent transition-colors duration-300 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                      <span className="break-all">{HERO.linkedin.replace('https://', '')}</span>
                     </a>
                   )}
                 </div>
@@ -393,7 +522,7 @@ const HomeContent = () => {
           </div>
           <div className="lg:col-span-7">
             <FadeUp delay={0.2}>
-              <div className="pt-4">
+              <div className="pt-0 sm:pt-4">
                 <ContactForm />
               </div>
             </FadeUp>
@@ -402,10 +531,10 @@ const HomeContent = () => {
       </section>
 
       {/* ── Footer ──────────────────────────────── */}
-      <footer className="border-t border-border py-8 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-dim">© {mounted ? new Date().getFullYear() : '2026'} {HERO.name}</p>
-          <div className="flex gap-8">
+      <footer className="border-t border-border py-6 sm:py-8 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-dim">© 2026 {HERO.name}</p>
+          <div className="flex gap-6 sm:gap-8">
             {HERO.linkedin && <a href={HERO.linkedin} target="_blank" rel="noopener noreferrer" className="text-xs text-dim hover:text-fg transition-colors duration-300 cursor-pointer tracking-widest uppercase">LinkedIn</a>}
             {HERO.github && <a href={HERO.github} target="_blank" rel="noopener noreferrer" className="text-xs text-dim hover:text-fg transition-colors duration-300 cursor-pointer tracking-widest uppercase">GitHub</a>}
             {HERO.email && <a href={`mailto:${HERO.email}`} className="text-xs text-dim hover:text-fg transition-colors duration-300 cursor-pointer tracking-widest uppercase">Email</a>}
