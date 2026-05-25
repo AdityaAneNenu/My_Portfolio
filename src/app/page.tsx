@@ -1,1154 +1,426 @@
 'use client'
 
-import React from 'react'
-import { motion } from 'framer-motion'
-import { FaLinkedin, FaEnvelope, FaCode, FaRocket, FaBrain, FaNetworkWired, FaGithub, FaChartLine, FaBars, FaTimes } from 'react-icons/fa'
-import { useEffect, Suspense, useState } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { useEffect, Suspense, useState, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
-import LiquidBackground from '@/components/LiquidBackground'
-import LiquidTypewriter from '@/components/LiquidTypewriter'
-import GestureInteractive, { MagneticElement } from '@/components/GestureInteractive'
+import TextReveal, { FadeUp } from '@/components/TextReveal'
+import Marquee from '@/components/Marquee'
 import ContactForm from '@/components/ContactForm'
+import SpotlightCard from '@/components/SpotlightCard'
+import MagneticButton from '@/components/MagneticButton'
+import {
+  PROJECTS,
+  HERO,
+  ABOUT,
+  STATS,
+  SKILLS,
+  CERTIFICATIONS,
+  EXPERIENCE,
+  ACHIEVEMENTS
+} from '@/data/projects'
+import Link from 'next/link'
+import ThemeToggle from '@/components/ThemeToggle'
+
+const NAV_ITEMS = [
+  { id: 'about', label: 'About' },
+  { id: 'skills', label: 'Skills' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'achievements', label: 'Achievements' },
+  { id: 'contact', label: 'Contact' },
+]
 
 const HomeContent = () => {
   const searchParams = useSearchParams()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [hasMounted, setHasMounted] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [activeSection, setActiveSection] = useState('')
 
   useEffect(() => {
-    setHasMounted(true)
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-
-    return () => window.removeEventListener('resize', checkMobile)
+    setMounted(true)
   }, [])
+  const heroRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll()
+  const headerOpacity = useTransform(scrollYProgress, [0, 0.05], [0, 1])
+  const headerY = useTransform(scrollYProgress, [0, 0.05], [-20, 0])
 
-  const projects = [
-    {
-      id: 1,
-      title: "SmartMedTracker - Healthcare Management Platform",
-      period: "2025",
-      description: "Built full-stack web application for tracking hospital bed availability using Next.js 15, TypeScript, and Firebase, with an integrated disease symptom checker powered by TensorFlow.js.",
-      keyContributions: [
-        "Built full-stack web application for tracking hospital bed availability using Next.js 15, TypeScript, and Firebase",
-        "Implemented disease symptom checker using TensorFlow.js model with rule-based validation logic",
-        "Designed Firestore database schema with indexed queries for real-time data updates across multiple facilities"
-      ],
-      techStack: ["Next.js 15", "TypeScript", "Firebase", "TensorFlow.js"],
-      icon: FaBrain,
-      color: "cyan",
-      category: "AI/ML"
-    },
-    {
-      id: 2,
-      title: "SETU - Municipal Complaint Management System",
-      period: "Dec 2025",
-      description: "Developed complaint tracking platform for Smart India Hackathon 2025 (Grand Finalist - SIH25151) using Django REST Framework, React Native, and PostgreSQL with AI-powered features.",
-      keyContributions: [
-        "Developed complaint tracking platform using Django REST Framework, React Native, and PostgreSQL",
-        "Integrated AssemblyAI for voice-to-text transcription and Google Generative AI for complaint categorization",
-        "Implemented RESTful API with JWT authentication and role-based access control for admin and citizen users"
-      ],
-      techStack: ["Django", "React Native", "PostgreSQL", "AssemblyAI", "Google Generative AI"],
-      icon: FaRocket,
-      color: "purple",
-      category: "Full Stack"
-    },
-    {
-      id: 3,
-      title: "Money Mentor AI - Financial Advisory Chat Application",
-      period: "Apr 2025 - May 2025",
-      description: "Built responsive financial advisory chatbot using Next.js 15, React 19, and Tailwind CSS with AI API integration, achieving 95+ Lighthouse scores.",
-      keyContributions: [
-        "Built responsive financial advisory chatbot using Next.js 15, React 19, and Tailwind CSS with AI API integration",
-        "Implemented accessible UI following WCAG 2.1 guidelines with keyboard navigation and dark/light mode toggle",
-        "Optimized performance with code splitting and lazy loading, achieving 95+ Lighthouse scores"
-      ],
-      techStack: ["Next.js 15", "React 19", "TypeScript", "Tailwind CSS", "AI API"],
-      icon: FaChartLine,
-      color: "green",
-      category: "AI/ML"
-    },
-    {
-      id: 4,
-      title: "Campus Area Network using VLAN",
-      period: "Jun 2024 - Jul 2024",
-      company: "Associated with BSNL LTD",
-      description: "Designed a college campus network across a five-floor building (Ground + 4) with comprehensive VLAN implementation and security features during internship at RTTC BSNL, Hyderabad.",
-      keyContributions: [
-        "Configured routers and VLAN switches in training lab environments to simulate campus network topologies",
-        "Applied subnetting strategies to optimize network segmentation across multiple departments",
-        "Documented network infrastructure diagrams and standard operating procedures for network maintenance protocols"
-      ],
-      techStack: ["Cisco Router", "VLAN", "Network Security", "DHCP", "DNS"],
-      icon: FaNetworkWired,
-      color: "blue",
-      category: "Networking"
-    },
-    {
-      id: 5,
-      title: "Multi-Agentic Chat System with Structured Results",
-      period: "Apr 2025",
-      description: "Developed a modular AI chatbot using Python and OpenAI API with multiple task-specific agents for enhanced performance and accuracy.",
-      keyContributions: [
-        "Developed modular AI chatbot using Python and OpenAI API",
-        "Achieved 90%+ classification accuracy across 200+ sample queries",
-        "Reduced response time by 35% through intent-based routing",
-        "Implemented prompt engineering for optimized performance"
-      ],
-      techStack: ["Python", "OpenAI API", "Natural Language Processing", "Machine Learning"],
-      icon: FaCode,
-      color: "orange",
-      category: "AI/ML"
-    },
-    {
-      id: 6,
-      title: "DreamScribe - AI-Powered Dream Journal",
-      period: "May 2025 - July 2025",
-      description: "DreamScribe is an AI-powered dream journal that helps users record, analyze, and understand their dreams through advanced insights and pattern recognition.",
-      keyContributions: [
-        "Developed an AI-powered dream analysis system for comprehensive insights, including emotional breakdowns and symbol identification.",
-        "Built a cross-platform application (web, iOS, Android) from a single codebase using React Native and Expo.",
-        "Established a robust and secure backend with Supabase for user authentication, data storage, and real-time features.",
-        "Designed an intuitive user interface with features for seamless dream recording, interactive analytics, and a comprehensive symbol library."
-      ],
-      techStack: ["TypeScript", "React Native", "Expo", "Supabase", "PostgreSQL", "Lucide Icons"],
-      icon: FaBrain,
-      color: "indigo",
-      category: "AI/ML"
-    }
-  ]
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActiveSection(entry.target.id)
+        })
+      },
+      { rootMargin: '-40% 0px -40% 0px', threshold: 0.1 }
+    )
+    NAV_ITEMS.forEach(({ id }) => {
+      const el = document.getElementById(id)
+      if (el) observer.observe(el)
+    })
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const section = searchParams.get('section')
     if (section) {
-      // Small delay to ensure the page has loaded
       setTimeout(() => {
-        const element = document.getElementById(section)
-        if (element) {
-          element.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          })
-        }
+        document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 100)
     }
   }, [searchParams])
 
-  // Don't render until client has mounted to prevent hydration mismatch
-  if (!hasMounted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-300"></div>
-      </div>
-    )
-  }
+  // Parallax effects
+  const heroY = useTransform(scrollYProgress, [0, 0.2], [0, 150])
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0])
+
+  // Split name for visual accentuation
+  const nameParts = HERO.name.split(' ')
+  const firstName = nameParts.slice(0, 2).join(' ')
+  const lastName = nameParts.slice(2).join(' ')
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {!isMobile && <LiquidBackground />}
+    <div className="min-h-screen">
 
-      {/* Navigation */}
-      {isMobile ? (
-        <>
-          {/* Mobile Header */}
-          <motion.nav
-            className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10"
-            initial={{ y: -100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-          >
-            <div className="flex items-center justify-between px-4 py-4">
-              <div className="text-white font-bold text-lg">VSLD</div>
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-white p-2"
+      {/* ── Sticky Nav ──────────────────────────── */}
+      <motion.nav
+        className="fixed top-0 left-0 right-0 z-50 bg-bg/80 backdrop-blur-md border-b border-border/50"
+        style={{ opacity: headerOpacity, y: headerY }}
+      >
+        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
+          <a href="#" className="text-sm font-semibold tracking-widest text-fg">{HERO.initials}</a>
+          <div className="hidden md:flex items-center gap-8">
+            {NAV_ITEMS.map(({ id, label }) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                className={`text-xs tracking-widest uppercase transition-colors duration-300 cursor-pointer ${
+                  activeSection === id ? 'text-accent' : 'text-muted hover:text-fg'
+                }`}
               >
-                {isMobileMenuOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
-              </button>
+                {label}
+              </a>
+            ))}
+            <div className="pl-4 border-l border-border flex items-center">
+              <ThemeToggle />
             </div>
-          </motion.nav>
+          </div>
+        </div>
+      </motion.nav>
 
-          {/* Mobile Menu Overlay */}
-          {isMobileMenuOpen && (
+      {/* ── Hero ────────────────────────────────── */}
+      <section ref={heroRef} className="min-h-[90vh] flex flex-col justify-center px-6 max-w-6xl mx-auto relative pt-20 pb-16 overflow-hidden">
+        <motion.div className="space-y-8" style={{ y: heroY, opacity: heroOpacity }}>
+          <motion.p
+            className="text-xs tracking-[0.3em] uppercase text-muted"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.2 }}
+          >
+            {HERO.role}
+          </motion.p>
+
+          <h1 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.9] tracking-tighter">
+            <TextReveal delay={0.4}>{firstName}</TextReveal>
+            <br />
+            <span className="text-accent">
+              <TextReveal delay={0.7}>{lastName}</TextReveal>
+            </span>
+          </h1>
+
+          <FadeUp delay={1.2}>
+            <p className="text-muted text-lg md:text-xl max-w-2xl leading-relaxed">
+              {HERO.description}
+            </p>
+          </FadeUp>
+
+          <FadeUp delay={1.5}>
+            <div className="flex flex-wrap gap-4 pt-6">
+              <MagneticButton href="#contact" className="text-sm font-semibold text-bg bg-accent border border-accent px-8 py-4
+                hover:bg-fg hover:border-fg transition-all duration-300 cursor-pointer tracking-widest uppercase">
+                Get in Touch
+              </MagneticButton>
+              {HERO.github && (
+                <MagneticButton href={HERO.github} target="_blank" rel="noopener noreferrer"
+                  className="text-sm font-medium text-fg border border-border px-8 py-4
+                  hover:bg-fg hover:text-bg transition-all duration-300 cursor-pointer tracking-widest uppercase">
+                  GitHub
+                </MagneticButton>
+              )}
+              {HERO.linkedin && (
+                <MagneticButton href={HERO.linkedin} target="_blank" rel="noopener noreferrer"
+                  className="text-sm font-medium text-fg border border-border px-8 py-4
+                  hover:bg-fg hover:text-bg transition-all duration-300 cursor-pointer tracking-widest uppercase">
+                  LinkedIn
+                </MagneticButton>
+              )}
+            </div>
+          </FadeUp>
+        </motion.div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          className="absolute bottom-10 left-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2 }}
+        >
+          <motion.div
+            className="w-px h-16 bg-border relative overflow-hidden"
+          >
             <motion.div
-              className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <div className="flex flex-col items-center justify-center h-full space-y-8">
-                {['Home', 'About', 'Skills', 'Experience', 'Projects', 'Achievements', 'Contact'].map((item, index) => (
-                  <motion.a
-                    key={item}
-                    href={`#${item.toLowerCase()}`}
-                    className="text-white text-2xl font-medium hover:text-orange-300 transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    {item}
-                  </motion.a>
+              className="w-full bg-accent absolute top-0"
+              style={{ height: '30%' }}
+              animate={{ y: ['0%', '233%', '0%'] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* ── Tech Stack Marquee ──────────────────── */}
+      <div className="py-6 border-y border-border">
+        <Marquee items={['Next.js', 'TypeScript', 'Python', 'TensorFlow', 'React Native', 'Firebase', 'Django', 'PostgreSQL', 'AWS', 'Supabase']} />
+      </div>
+
+      {/* ── About ───────────────────────────────── */}
+      <section id="about" className="py-16 md:py-24 px-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24">
+          <div className="lg:col-span-4">
+            <FadeUp>
+              <p className="text-xs tracking-[0.3em] uppercase text-muted mb-4">About</p>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+                Building at the intersection of AI & engineering.
+              </h2>
+            </FadeUp>
+          </div>
+          <div className="lg:col-span-8 space-y-8">
+            {ABOUT.map((para, i) => (
+              <FadeUp key={i} delay={0.2 + i * 0.1}>
+                <p className="text-muted text-lg leading-relaxed">
+                  {para}
+                </p>
+              </FadeUp>
+            ))}
+            <FadeUp delay={0.4}>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-8 border-t border-border">
+                {STATS.map((stat) => (
+                  <div key={stat.label}>
+                    <p className="text-3xl font-bold text-fg">{stat.value}</p>
+                    <p className="text-xs text-muted tracking-widest uppercase mt-1">{stat.label}</p>
+                  </div>
                 ))}
               </div>
-            </motion.div>
-          )}
-        </>
-      ) : (
-        /* Desktop Navigation */
-        <motion.nav
-          className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50"
-          initial={{ y: -100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-        >
-          <div className="glass-card px-6 py-3">
-            <div className="flex items-center space-x-6">
-              <MagneticElement>
-                <a href="#home" className="text-white hover:text-orange-300 transition-colors font-medium text-sm">Home</a>
-              </MagneticElement>
-              <MagneticElement>
-                <a href="#about" className="text-white/80 hover:text-orange-300 transition-colors font-medium text-sm">About</a>
-              </MagneticElement>
-              <MagneticElement>
-                <a href="#skills" className="text-white/80 hover:text-orange-300 transition-colors font-medium text-sm">Skills</a>
-              </MagneticElement>
-              <MagneticElement>
-                <a href="#experience" className="text-white/80 hover:text-orange-300 transition-colors font-medium text-sm">Experience</a>
-              </MagneticElement>
-              <MagneticElement>
-                <a href="#projects" className="text-white/80 hover:text-orange-300 transition-colors font-medium text-sm">Projects</a>
-              </MagneticElement>
-              <MagneticElement>
-                <a href="#achievements" className="text-white/80 hover:text-orange-300 transition-colors font-medium text-sm">Achievements</a>
-              </MagneticElement>
-              <MagneticElement>
-                <a href="#contact" className="text-white/80 hover:text-orange-300 transition-colors font-medium text-sm">Contact</a>
-              </MagneticElement>
-            </div>
+            </FadeUp>
           </div>
-        </motion.nav>
-      )}
-
-      {/* Hero Section */}
-      <section id="home" className={`min-h-screen flex items-center justify-center px-4 md:px-6 relative ${isMobile ? 'pt-20' : 'pt-32'}`}>
-        <div className="max-w-6xl mx-auto text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="mb-8"
-          >
-            <h1 className={`${isMobile ? 'text-3xl' : 'text-5xl md:text-7xl'} font-display font-bold mb-6 leading-tight`}>
-              <span className="block text-white mb-2">
-                Venkata Siva
-              </span>
-              <span className="block" style={{ color: '#ff783c' }}>
-                <LiquidTypewriter text="Lalitaaditya Duggi" delay={isMobile ? 10 : 5} />
-              </span>
-            </h1>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.5 }}
-            className="mb-12"
-          >
-            <h2 className={`${isMobile ? 'text-lg' : 'text-xl md:text-3xl'} text-white/80 mb-4 font-medium`}>
-              AI/ML Developer | B.Tech CSE (AI & ML) | VIT-AP
-            </h2>
-            <p className={`${isMobile ? 'text-base' : 'text-lg'} text-white/70 max-w-3xl mx-auto mb-8`}>
-              Computer Science student specializing in AI & ML who builds web applications—from healthcare platforms forming hospital beds to municipal complaint systems—primarily with Next.js, TypeScript, and Firebase. Combined neural networks with rule-based systems in production apps. Grand Finalist at Smart India Hackathon 2025.
-            </p>
-            <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'justify-center space-x-4'} text-sm text-white/60`}>
-              <span>📧 adityaduggi0@gmail.com</span>
-              <span>📱 +91 733 066 9413</span>
-              <span>🌐 github.com/AdityaAneNenu</span>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 3 }}
-            className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-center space-x-6'} mb-12`}
-          >
-            {isMobile ? (
-              <>
-                <motion.a
-                  href="https://www.linkedin.com/in/vsld"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="liquid-button flex items-center justify-center space-x-3"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FaLinkedin className="w-5 h-5" />
-                  <span>Connect</span>
-                </motion.a>
-                <motion.a
-                  href="https://github.com/AdityaAneNenu"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="liquid-button flex items-center justify-center space-x-3"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FaGithub className="w-5 h-5" />
-                  <span>Explore</span>
-                </motion.a>
-                <motion.a
-                  href="#contact"
-                  className="liquid-button flex items-center justify-center space-x-3"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FaEnvelope className="w-5 h-5" />
-                  <span>Contact</span>
-                </motion.a>
-              </>
-            ) : (
-              <>
-                <GestureInteractive>
-                  <motion.a
-                    href="https://www.linkedin.com/in/vsld"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="liquid-button flex items-center space-x-3"
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <FaLinkedin className="w-5 h-5" />
-                    <span>Connect</span>
-                  </motion.a>
-                </GestureInteractive>
-                <GestureInteractive>
-                  <motion.a
-                    href="https://github.com/AdityaAneNenu"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="liquid-button flex items-center space-x-3"
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <FaGithub className="w-5 h-5" />
-                    <span>Explore</span>
-                  </motion.a>
-                </GestureInteractive>
-                <GestureInteractive>
-                  <motion.a
-                    href="#contact"
-                    className="liquid-button flex items-center space-x-3"
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <FaEnvelope className="w-5 h-5" />
-                    <span>Contact</span>
-                  </motion.a>
-                </GestureInteractive>
-              </>
-            )}
-          </motion.div>
         </div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 3, repeat: Infinity }}
-        >
-          <div className="w-6 h-10 border-2 border-white/20 rounded-full flex justify-center backdrop-blur-sm">
-            <motion.div
-              className="w-1 h-3 rounded-full mt-2"
-              style={{
-                background: `linear-gradient(180deg,
-                  rgba(var(--orange-glow), 1) 0%,
-                  rgba(var(--purple-glow), 1) 100%)`
-              }}
-              animate={{ y: [0, 12, 0], opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 3, repeat: Infinity }}
-            />
-          </div>
-        </motion.div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="py-20 px-4 md:px-6 max-w-7xl mx-auto relative">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-5xl font-display font-bold gradient-text mb-4">
-            About Me
-          </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-orange-300 to-purple-400 mx-auto rounded-full"></div>
-        </motion.div>
+      {/* ── Skills ──────────────────────────────── */}
+      <section id="skills" className="py-16 md:py-24 px-6 max-w-6xl mx-auto">
+        <FadeUp>
+          <p className="text-xs tracking-[0.3em] uppercase text-muted mb-4">Expertise</p>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-16">Skills & Technologies</h2>
+        </FadeUp>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          <motion.div
-            initial={{ opacity: 0, x: isMobile ? 0 : -50, y: isMobile ? 20 : 0 }}
-            whileInView={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 0.6, delay: isMobile ? 0 : 0.2 }}
-            viewport={{ once: true }}
-            className="space-y-6"
-          >
-            <div className="glass-card">
-              <p className="text-lg text-white/80 leading-relaxed">
-                As an <span className="gradient-text font-semibold">AI/ML Developer</span>, I specialize in building OpenAI-based chatbots and implementing machine learning models with <span className="gradient-text font-semibold">TensorFlow and Scikit-learn</span>. My expertise extends to deploying cloud-based solutions using AWS, with a strong foundation in software development, networking, and rapid prototyping in collaborative environments.
-              </p>
-            </div>
-            <div className="glass-card">
-              <p className="text-lg text-white/80 leading-relaxed">
-                Currently serving as <span className="gradient-text font-semibold">President of VIT-AP Newspaper Club</span>, I lead initiatives combining creative writing and tech journalism. My technical journey includes developing multi-agentic chat systems, network optimization projects, and machine learning pipelines for stock prediction, achieving <span className="gradient-text font-semibold">90%+ classification accuracy</span> across diverse applications.
-              </p>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: isMobile ? 0 : 50, y: isMobile ? 20 : 0 }}
-            whileInView={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 0.6, delay: isMobile ? 0.2 : 0.4 }}
-            viewport={{ once: true }}
-            className="relative"
-          >
-            <div className="glass-card p-8 text-center">
-              <div className="w-32 h-32 mx-auto mb-6 relative">
-                <motion.div
-                  className="w-full h-full rounded-full"
-                  style={{
-                    background: `conic-gradient(from 0deg,
-                      rgba(var(--orange-glow), 0.8) 0deg,
-                      rgba(var(--purple-glow), 0.8) 120deg,
-                      rgba(var(--blue-glow), 0.8) 240deg,
-                      rgba(var(--orange-glow), 0.8) 360deg)`,
-                    filter: 'blur(8px)',
-                  }}
-                  animate={{
-                    rotate: [0, 360],
-                  }}
-                  transition={{
-                    duration: 12,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                />
-                <div className="absolute inset-2 bg-black/80 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/10">
-                  <FaCode className="w-12 h-12 text-white/80" />
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          {Object.entries(SKILLS).map(([category, skills], catIdx) => (
+            <FadeUp key={category} delay={catIdx * 0.1}>
+              <div>
+                <h3 className="text-xs tracking-[0.3em] uppercase text-accent mb-6">{category}</h3>
+                <ul className="space-y-3">
+                  {skills.map((skill) => (
+                    <li key={skill} className="text-muted hover:text-fg transition-colors duration-300 cursor-default text-sm">
+                      {skill}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <h3 className="text-2xl font-display font-bold text-white mb-4">
-                Digital Innovation Leader
-              </h3>
-              <p className="text-white/70">
-                Bridging the gap between technology and creativity through strategic leadership and hands-on development.
-              </p>
-            </div>
-          </motion.div>
+            </FadeUp>
+          ))}
         </div>
-      </section>
 
-      {/* Skills Section */}
-      <section id="skills" className="py-20 px-4 md:px-6 max-w-7xl mx-auto relative">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-5xl font-display font-bold gradient-text mb-4">
-            Skills & Technologies
-          </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-orange-300 to-purple-400 mx-auto rounded-full"></div>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-7xl mx-auto stagger-fade-in">
-          {/* Programming Skills */}
-          <motion.div
-            className="glass-card group h-full"
-            whileHover={isMobile ? {} : { scale: 1.02 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="flex items-center mb-6">
-              <FaCode className="w-6 h-6 text-orange-400 mr-3" />
-              <h3 className="text-xl font-display font-semibold text-white">Programming</h3>
-            </div>
-            <div className="space-y-4">
-              {[
-                { skill: 'Python', level: 55 },
-                { skill: 'Java', level: 50 },
-                { skill: 'MySQL', level: 40 },
-                { skill: 'HTML/CSS', level: 70 }
-              ].map((item, index) => (
-                <div key={item.skill} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/80 text-sm font-medium">{item.skill}</span>
-                    <span className="text-orange-400 text-xs">{item.level}%</span>
-                  </div>
-                  <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-orange-400 to-purple-400"
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${item.level}%` }}
-                      transition={{ duration: 1, delay: index * 0.1 }}
-                      viewport={{ once: true }}
-                    />
-                  </div>
-                </div>
+        {/* Certifications */}
+        <FadeUp delay={0.4}>
+          <div className="mt-20 pt-12 border-t border-border">
+            <h3 className="text-xs tracking-[0.3em] uppercase text-accent mb-6">Certifications</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {CERTIFICATIONS.map((cert) => (
+                <p key={cert} className="text-muted text-sm hover:text-fg transition-colors duration-300">{cert}</p>
               ))}
             </div>
-          </motion.div>
-
-          {/* AI/ML Tools */}
-          <motion.div
-            className="glass-card group h-full"
-            whileHover={isMobile ? {} : { scale: 1.02 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="flex items-center mb-6">
-              <FaBrain className="w-6 h-6 text-purple-400 mr-3" />
-              <h3 className="text-xl font-display font-semibold text-white">AI/ML Tools</h3>
-            </div>
-            <div className="space-y-4">
-              {[
-                { skill: 'TensorFlow', level: 30 },
-                { skill: 'PyTorch', level: 45 },
-                { skill: 'Keras', level: 40 },
-                { skill: 'Scikit-learn', level: 35 }
-              ].map((item, index) => (
-                <div key={item.skill} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/80 text-sm font-medium">{item.skill}</span>
-                    <span className="text-purple-400 text-xs">{item.level}%</span>
-                  </div>
-                  <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-purple-400 to-pink-400"
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${item.level}%` }}
-                      transition={{ duration: 1, delay: index * 0.1 }}
-                      viewport={{ once: true }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Tools & Platforms */}
-          <motion.div
-            className="glass-card group h-full"
-            whileHover={isMobile ? {} : { scale: 1.02 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="flex items-center mb-6">
-              <FaNetworkWired className="w-6 h-6 text-blue-400 mr-3" />
-              <h3 className="text-xl font-display font-semibold text-white">Tools & Platforms</h3>
-            </div>
-            <div className="space-y-4">
-              {[
-                { skill: 'VS Code', level: 75 },
-                { skill: 'Git/GitHub', level: 60 },
-                { skill: 'AWS Console', level: 35 },
-                { skill: 'Figma', level: 75 }
-              ].map((item, index) => (
-                <div key={item.skill} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/80 text-sm font-medium">{item.skill}</span>
-                    <span className="text-blue-400 text-xs">{item.level}%</span>
-                  </div>
-                  <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-blue-400 to-cyan-400"
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${item.level}%` }}
-                      transition={{ duration: 1, delay: index * 0.1 }}
-                      viewport={{ once: true }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Certifications */}
-          <motion.div
-            className="glass-card group h-full"
-            whileHover={isMobile ? {} : { scale: 1.02 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="flex items-center mb-6">
-              <FaRocket className="w-6 h-6 text-green-400 mr-3" />
-              <h3 className="text-xl font-display font-semibold text-white">Certifications</h3>
-            </div>
-            <div className="space-y-3">
-              {[
-                { cert: 'Oracle Genrerative AI', date: 'July 2025' },
-                { cert: 'Digital Skills: AI by Accenture', date: 'Sep 2024' },
-                { cert: 'Microsoft Azure AI Fundamentals', date: 'Jul 2024' },
-                { cert: 'AWS Cloud Foundations', date: 'Sep 2024' }
-              ].map((item, index) => (
-                <motion.div
-                  key={item.cert}
-                  className="p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10"
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.05 }}
-                  viewport={{ once: true }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start">
-                      <div className="w-2 h-2 bg-green-400 rounded-full mr-3 mt-2 flex-shrink-0"></div>
-                      <div>
-                        <span className="text-white/80 text-sm font-medium block leading-tight">{item.cert}</span>
-                        <span className="text-xs text-white/50 mt-1 block">{item.date}</span>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Experience Section */}
-      <section id="experience" className="py-20 px-4 md:px-6 max-w-7xl mx-auto relative">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-5xl font-display font-bold neon-text mb-4">
-            Experience
-          </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
-        </motion.div>
-
-        <div className="max-w-4xl mx-auto relative">
-          {/* Timeline Line */}
-          <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-400 to-purple-400"></div>
-
-          <div className="space-y-12">
-            {[
-              {
-                title: 'President',
-                company: 'VIT-AP Newspaper Club',
-                period: 'Aug 2025 - Present',
-                description: 'Led initiatives combining creative writing and tech journalism. Organized interactive sessions on innovation and public speaking.',
-                icon: FaRocket,
-                color: 'cyan'
-              },
-              {
-                title: 'Intern - RTTC BSNL',
-                company: 'Hyderabad',
-                period: 'Jun 2024 - Jul 2024',
-                description: 'Configured routers and VLAN switches across simulated BSNL campus network environments. Analyzed and optimized subnetting strategies to improve traffic flow by 30%. Captured and diagnosed network traffic using Wireshark for 10+ test cases.',
-                icon: FaNetworkWired,
-                color: 'purple'
-              }
-            ].map((exp, index) => (
-              <motion.div
-                key={index}
-                className="relative flex items-start"
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
-                viewport={{ once: true }}
-              >
-                <div className={`absolute left-6 w-4 h-4 rounded-full border-4 border-gray-900 z-10 ${
-                  exp.color === 'cyan' ? 'bg-cyan-400' :
-                  exp.color === 'purple' ? 'bg-purple-400' : 'bg-blue-400'
-                }`}></div>
-                <div className="ml-16 futuristic-card flex-1">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-xl font-display font-bold text-white mb-1">{exp.title}</h3>
-                      <p className={`font-semibold mb-2 ${
-                        exp.color === 'cyan' ? 'text-cyan-400' :
-                        exp.color === 'purple' ? 'text-purple-400' : 'text-blue-400'
-                      }`}>{exp.company}</p>
-                      <p className="text-gray-500 text-sm">{exp.period}</p>
-                    </div>
-                    <exp.icon className={`w-8 h-8 flex-shrink-0 ${
-                      exp.color === 'cyan' ? 'text-cyan-400' :
-                      exp.color === 'purple' ? 'text-purple-400' : 'text-blue-400'
-                    }`} />
-                  </div>
-                  <p className="text-gray-300 leading-relaxed">{exp.description}</p>
-                </div>
-              </motion.div>
-            ))}
           </div>
-        </div>
+        </FadeUp>
       </section>
 
-      {/* Projects Section */}
-      <section id="projects" className="py-20 px-4 md:px-6 max-w-7xl mx-auto relative">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-5xl font-display font-bold neon-text mb-4">
-            Featured Projects
-          </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-cyan-400 to-purple-400 mx-auto rounded-full mb-8"></div>
-          <p className="text-lg text-gray-400 max-w-3xl mx-auto">
-            Explore my journey through AI/ML development, network engineering, and full-stack applications.
-            Each project represents a milestone in my technical evolution.
-          </p>
-        </motion.div>
+      {/* ── Experience ──────────────────────────── */}
+      <section id="experience" className="py-16 md:py-24 px-6 max-w-6xl mx-auto">
+        <FadeUp>
+          <p className="text-xs tracking-[0.3em] uppercase text-muted mb-4">Career</p>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-16">Experience</h2>
+        </FadeUp>
 
-        {/* Projects Grid */}
-        <div className={isMobile ? 'space-y-12' : 'space-y-20'}>
-          {projects.map((project, index) => (
-            isMobile ? (
-              <motion.div
-                key={project.id}
-                className="grid grid-cols-1 gap-6 items-start"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                {/* Project Number & Icon */}
-                <div className="col-span-1 flex flex-row items-center mb-4">
-                  <div className="relative mb-4">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
-                      <project.icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center border-2 border-cyan-400">
-                      <span className="text-cyan-400 font-bold text-xs">{project.id}</span>
-                    </div>
+        <div className="space-y-0">
+          {EXPERIENCE.map((exp, i) => (
+            <FadeUp key={i} delay={i * 0.15}>
+              <SpotlightCard className="py-10 border-b border-border group">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8 px-4 -mx-4 group-hover:pl-6 transition-all duration-300 ease-out">
+                  <div className="md:col-span-3">
+                    <p className="text-xs text-muted tracking-widest uppercase mt-1">{exp.period}</p>
                   </div>
-                  <span className={`text-xs px-3 py-1 rounded-full ml-4 ${
-                    project.category === 'AI/ML' ? 'bg-cyan-500/20 text-cyan-300' :
-                    'bg-purple-500/20 text-purple-300'
-                  }`}>
-                    {project.category}
-                  </span>
-                </div>
-
-                {/* Project Content */}
-                <div className="col-span-1">
-                  <div className="futuristic-card p-4">
-                    <div className={`flex flex-col mb-6`}>
-                      <div>
-                        <h3 className="text-xl font-display font-bold text-white mb-2">
-                          {project.title}
-                        </h3>
-                        {project.company && (
-                          <p className="text-gray-400 mb-2">{project.company}</p>
-                        )}
-                        <p className={`text-sm font-semibold ${
-                          project.color === 'cyan' ? 'text-cyan-400' :
-                          project.color === 'purple' ? 'text-purple-400' :
-                          project.color === 'blue' ? 'text-blue-400' :
-                          'text-green-400'
-                        }`}>
-                          {project.period}
-                        </p>
-                      </div>
-                    </div>
-
-                    <p className="text-gray-300 text-base leading-relaxed mb-6">
-                      {project.description}
-                    </p>
-
-                    <div className="mb-6">
-                      <h4 className="text-lg font-semibold text-white mb-4">Key Contributions:</h4>
-                      <ul className="space-y-2">
-                        {project.keyContributions.map((contribution, idx) => (
-                          <li key={idx} className="flex items-start">
-                            <div className={`w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 ${
-                              project.color === 'cyan' ? 'bg-cyan-400' :
-                              project.color === 'purple' ? 'bg-purple-400' :
-                              project.color === 'blue' ? 'bg-blue-400' :
-                              'bg-green-400'
-                            }`}></div>
-                            <span className="text-gray-300">{contribution}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="text-lg font-semibold text-white mb-4">Tech Stack:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {project.techStack.map((tech, idx) => (
-                          <span
-                            key={idx}
-                            className={`text-xs px-3 py-1 rounded-full ${
-                              project.color === 'cyan' ? 'bg-cyan-500/20 text-cyan-300' :
-                              project.color === 'purple' ? 'bg-purple-500/20 text-purple-300' :
-                              project.color === 'blue' ? 'bg-blue-500/20 text-blue-300' :
-                              'bg-green-500/20 text-green-300'
-                            }`}
-                          >
-                            {tech}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                  <div className="md:col-span-9">
+                    <h3 className="text-xl font-semibold text-fg mb-1 group-hover:text-accent transition-colors duration-300">{exp.title}</h3>
+                    <p className="text-accent text-sm mb-4">{exp.org}</p>
+                    <p className="text-muted text-sm leading-relaxed">{exp.description}</p>
                   </div>
                 </div>
-              </motion.div>
-            ) : (
-              <GestureInteractive key={project.id}>
-                <motion.div
-                  className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
-                  initial={{ opacity: 0, y: 50 }}
-                  {...(index === 0 ? {
-                    animate: { opacity: 1, y: 0 },
-                    transition: { duration: 0.8, delay: 0.5 }
-                  } : {
-                    whileInView: { opacity: 1, y: 0 },
-                    transition: { duration: 0.8, delay: (index - 1) * 0.2 },
-                    viewport: { once: true }
-                  })}
-                >
-                  {/* Project Number & Icon */}
-                  <div className="lg:col-span-2 flex flex-col items-center lg:items-start">
-                    <div className="relative mb-4">
-                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center animate-pulse-slow">
-                        <project.icon className="w-8 h-8 text-white" />
-                      </div>
-                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center border-2 border-cyan-400">
-                        <span className="text-cyan-400 font-bold text-sm">{project.id}</span>
-                      </div>
-                    </div>
-                    <span className={`text-xs px-3 py-1 rounded-full ${
-                      project.category === 'AI/ML' ? 'bg-cyan-500/20 text-cyan-300' :
-                      'bg-purple-500/20 text-purple-300'
-                    }`}>
-                      {project.category}
-                    </span>
-                  </div>
-
-                  {/* Project Content */}
-                  <div className="lg:col-span-10">
-                    <div className="futuristic-card p-8">
-                      <div className={`flex flex-col md:flex-row md:items-start md:justify-between mb-6`}>
-                        <div>
-                          <h3 className="text-2xl md:text-3xl font-display font-bold text-white mb-2">
-                            {project.title}
-                          </h3>
-                          {project.company && (
-                            <p className="text-gray-400 mb-2">{project.company}</p>
-                          )}
-                          <p className={`text-sm font-semibold ${
-                            project.color === 'cyan' ? 'text-cyan-400' :
-                            project.color === 'purple' ? 'text-purple-400' :
-                            project.color === 'blue' ? 'text-blue-400' :
-                            'text-green-400'
-                          }`}>
-                            {project.period}
-                          </p>
-                        </div>
-                      </div>
-
-                      <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                        {project.description}
-                      </p>
-
-                      <div className="mb-6">
-                        <h4 className="text-lg font-semibold text-white mb-4">Key Contributions:</h4>
-                        <ul className="space-y-2">
-                          {project.keyContributions.map((contribution, idx) => (
-                            <li key={idx} className="flex items-start">
-                              <div className={`w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 ${
-                                project.color === 'cyan' ? 'bg-cyan-400' :
-                                project.color === 'purple' ? 'bg-purple-400' :
-                                project.color === 'blue' ? 'bg-blue-400' :
-                                'bg-green-400'
-                              }`}></div>
-                              <span className="text-gray-300">{contribution}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div>
-                        <h4 className="text-lg font-semibold text-white mb-4">Tech Stack:</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {project.techStack.map((tech, idx) => (
-                            <span
-                              key={idx}
-                              className={`text-xs px-3 py-1 rounded-full ${
-                                project.color === 'cyan' ? 'bg-cyan-500/20 text-cyan-300' :
-                                project.color === 'purple' ? 'bg-purple-500/20 text-purple-300' :
-                                project.color === 'blue' ? 'bg-blue-500/20 text-blue-300' :
-                                'bg-green-500/20 text-green-300'
-                              }`}
-                            >
-                              {tech}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </GestureInteractive>
-            )
+              </SpotlightCard>
+            </FadeUp>
           ))}
         </div>
       </section>
 
-      {/* Achievements & Certifications Section */}
-      <section id="achievements" className="py-20 px-4 md:px-6 max-w-7xl mx-auto relative">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-5xl font-display font-bold neon-text mb-4">
-            Achievements & Recognition
-          </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-yellow-400 to-orange-400 mx-auto rounded-full"></div>
-        </motion.div>
-
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Achievements */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <div className="futuristic-card h-full">
-              <h3 className="text-2xl font-display font-bold text-white mb-6 flex items-center">
-                <FaRocket className="w-6 h-6 text-yellow-400 mr-3" />
-                Hackathons & Leadership
-              </h3>
-              <div className="space-y-6">
-                {[
-                  {
-                    title: "🏆 Grand-Finalist",
-                    event: "Smart India Hackathon 2025",
-                    description: "Developed SETU municipal complaint management system for problem statement SIH25151",
-                    date: "Dec 2025",
-                    color: "yellow"
-                  },
-                  {
-                    title: "🥈 Runner-up",
-                    event: "Bharat Blockchain Yatra Hackathon",
-                    description: "Polyversity blockchain innovation challenge",
-                    date: "Apr 2024",
-                    color: "purple"
-                  },
-                  {
-                    title: "🎯 Top 50",
-                    event: "Octopus Hackathon",
-                    description: "Developed Mood Garden project - mental wellness application",
-                    date: "Sep 2025 - Nov 2025",
-                    color: "cyan"
-                  }
-                ].map((achievement, index) => (
-                  <motion.div
-                    key={index}
-                    className="border-l-4 border-yellow-400 pl-4 py-2"
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                  >
-                    <h4 className="text-lg font-semibold text-white mb-1">{achievement.title}</h4>
-                    <p className={`font-medium mb-2 ${
-                      achievement.color === 'yellow' ? 'text-yellow-400' :
-                      achievement.color === 'purple' ? 'text-purple-400' :
-                      'text-cyan-400'
-                    }`}>
-                      {achievement.event}
-                    </p>
-                    <p className="text-gray-400 text-sm mb-2">{achievement.description}</p>
-                    <p className="text-gray-500 text-xs">{achievement.date}</p>
-                  </motion.div>
-                ))}
-              </div>
+      {/* ── Projects ────────────────────────────── */}
+      <section id="projects" className="py-16 md:py-24 px-6 max-w-6xl mx-auto">
+        <FadeUp>
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-16">
+            <div className="md:col-span-3">
+              <p className="text-xs tracking-[0.3em] uppercase text-muted pt-2">Work</p>
             </div>
-          </motion.div>
+            <div className="md:col-span-9">
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Projects</h2>
+            </div>
+          </div>
+        </FadeUp>
 
-          {/* Stats Section */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <div className="futuristic-card h-full flex items-center justify-center">
-              <div className="w-full">
-                <h3 className="text-2xl font-display font-bold text-white mb-6 flex items-center justify-center">
-                  <FaChartLine className="w-6 h-6 text-purple-400 mr-3" />
-                  Quick Stats
-                </h3>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="text-center p-6 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-lg border border-cyan-400/20">
-                    <p className="text-4xl font-bold text-cyan-400 mb-2">8.32</p>
-                    <p className="text-gray-400 text-sm">CGPA</p>
+        <div className="space-y-0">
+          {PROJECTS.slice(0, 3).map((project, i) => (
+            <FadeUp key={project.slug} delay={i * 0.08}>
+              <Link href={`/projects/${project.slug}`} className="block py-12 border-b border-border group cursor-pointer hover:bg-fg/5 transition-colors duration-300">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                  <div className="md:col-span-3">
+                    <p className="text-xs text-muted tracking-widest uppercase mt-2 group-hover:text-accent transition-colors duration-300">{project.period}</p>
                   </div>
-                  <div className="text-center p-6 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-400/20">
-                    <p className="text-4xl font-bold text-purple-400 mb-2">6+</p>
-                    <p className="text-gray-400 text-sm">Projects</p>
-                  </div>
-                  <div className="text-center p-6 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-lg border border-yellow-400/20">
-                    <p className="text-4xl font-bold text-yellow-400 mb-2">10+</p>
-                    <p className="text-gray-400 text-sm">Hackathons</p>
-                  </div>
-                  <div className="text-center p-6 bg-gradient-to-br from-green-500/10 to-teal-500/10 rounded-lg border border-green-400/20">
-                    <p className="text-4xl font-bold text-green-400 mb-2">4+</p>
-                    <p className="text-gray-400 text-sm">Certifications</p>
+                  <div className="md:col-span-9">
+                    <h3 className="text-4xl md:text-5xl font-bold text-fg mb-4 group-hover:pl-4 transition-all duration-500 ease-out flex items-center gap-4">
+                      {project.title}
+                      <svg className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </h3>
+                    <p className="text-sm text-accent uppercase tracking-widest mb-4 group-hover:pl-4 transition-all duration-500 ease-out delay-75">{project.subtitle}</p>
+                    <p className="text-muted text-sm leading-relaxed max-w-xl group-hover:pl-4 transition-all duration-500 ease-out delay-100">{project.description}</p>
                   </div>
                 </div>
-              </div>
-            </div>
-          </motion.div>
+              </Link>
+            </FadeUp>
+          ))}
+        </div>
+
+        <FadeUp delay={0.3}>
+          <div className="mt-16 flex justify-center">
+            <MagneticButton href="/projects" className="text-sm font-semibold text-bg bg-accent border border-accent px-10 py-5
+              hover:bg-fg hover:border-fg hover:text-bg transition-all duration-300 cursor-pointer tracking-widest uppercase">
+              Show Me More
+            </MagneticButton>
+          </div>
+        </FadeUp>
+      </section>
+
+      {/* ── Achievements ────────────────────────── */}
+      <section id="achievements" className="py-16 md:py-24 px-6 max-w-6xl mx-auto">
+        <FadeUp>
+          <p className="text-xs tracking-[0.3em] uppercase text-muted mb-4">Recognition</p>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-16">Achievements</h2>
+        </FadeUp>
+
+        <div className="space-y-0">
+          {ACHIEVEMENTS.map((item, i) => (
+            <FadeUp key={i} delay={i * 0.1}>
+              <SpotlightCard className="py-8 border-b border-border group cursor-default">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8 px-4 -mx-4 group-hover:pl-6 transition-all duration-300 ease-out">
+                  <div className="md:col-span-3">
+                    <p className="text-xs text-muted tracking-widest uppercase mt-1">{item.date}</p>
+                  </div>
+                  <div className="md:col-span-9">
+                    <div className="flex items-baseline gap-3 mb-2">
+                      <span className="text-accent text-sm font-semibold">{item.title}</span>
+                      <span className="text-fg text-sm group-hover:text-accent transition-colors duration-300">— {item.event}</span>
+                    </div>
+                    <p className="text-muted text-sm">{item.detail}</p>
+                  </div>
+                </div>
+              </SpotlightCard>
+            </FadeUp>
+          ))}
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-20 px-4 md:px-6 max-w-7xl mx-auto relative">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-5xl font-display font-bold neon-text mb-4">
-            Get In Touch
-          </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-cyan-400 to-purple-400 mx-auto rounded-full mb-8"></div>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-            Let&apos;s connect and discuss opportunities in AI/ML, software development, or any exciting tech projects.
-          </p>
-        </motion.div>
-
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact Information */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="space-y-8"
-          >
-            <div className="futuristic-card">
-              <h3 className="text-2xl font-display font-bold text-white mb-6">Contact Information</h3>
-              <div className="space-y-6">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full flex items-center justify-center">
-                    <FaEnvelope className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-white font-semibold">Email</h4>
-                    <a href="mailto:adityaduggi0@gmail.com" className="text-cyan-400 hover:text-cyan-300 transition-colors">
-                      adityaduggi0@gmail.com
+      {/* ── Contact ──────────────────────────────── */}
+      <section id="contact" className="py-16 md:py-24 px-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
+          <div className="lg:col-span-5">
+            <FadeUp>
+              <p className="text-xs tracking-[0.3em] uppercase text-muted mb-4">Contact</p>
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">
+                Let&apos;s work<br/>together.
+              </h2>
+              <p className="text-muted text-lg mb-12">
+                I&apos;m currently available for freelance work and full-time opportunities. If you have a project that needs some creative magic, I&apos;d love to hear about it.
+              </p>
+              
+              <div className="space-y-6 pt-4">
+                <div className="space-y-6 text-sm">
+                  {HERO.email && (
+                    <a href={`mailto:${HERO.email}`} className="flex items-center gap-6 text-muted hover:text-accent transition-colors duration-300 group">
+                      <svg className="w-5 h-5 text-dim group-hover:text-accent transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                      {HERO.email}
                     </a>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full flex items-center justify-center">
-                    <FaLinkedin className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-white font-semibold">LinkedIn</h4>
-                    <a href="https://www.linkedin.com/in/vsld" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors">
-                      linkedin.com/in/vsld
+                  )}
+                  {HERO.github && (
+                    <a href={HERO.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-6 text-muted hover:text-accent transition-colors duration-300 group">
+                      <svg className="w-5 h-5 text-dim group-hover:text-accent transition-colors duration-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                      {HERO.github.replace('https://', '')}
                     </a>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-600 rounded-full flex items-center justify-center">
-                    <FaGithub className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-white font-semibold">GitHub</h4>
-                    <a href="https://github.com/AdityaAneNenu" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 transition-colors">
-                      github.com/AdityaAneNenu
+                  )}
+                  {HERO.linkedin && (
+                    <a href={HERO.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-6 text-muted hover:text-accent transition-colors duration-300 group">
+                      <svg className="w-5 h-5 text-dim group-hover:text-accent transition-colors duration-300" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                      {HERO.linkedin.replace('https://', '')}
                     </a>
-                  </div>
+                  )}
                 </div>
               </div>
-            </div>
-          </motion.div>
-
-          {/* Contact Form */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <ContactForm />
-          </motion.div>
+            </FadeUp>
+          </div>
+          <div className="lg:col-span-7">
+            <FadeUp delay={0.2}>
+              <div className="pt-4">
+                <ContactForm />
+              </div>
+            </FadeUp>
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-4 md:px-6 border-t border-gray-800/50">
-        <div className="max-w-7xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <p className="text-gray-400 mb-4">
-              © 2024 Venkata Siva Lalitaaditya Duggi. Crafted with passion and futuristic vision.
-            </p>
-            <div className="flex justify-center space-x-6">
-              <a
-                href="https://www.linkedin.com/in/vsld"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-500 hover:text-cyan-400 transition-colors"
-              >
-                <FaLinkedin className="w-6 h-6" />
-              </a>
-              <a
-                href="https://github.com/AdityaAneNenu"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-500 hover:text-cyan-400 transition-colors"
-              >
-                <FaGithub className="w-6 h-6" />
-              </a>
-              <a
-                href="mailto:adityaduggi0@gmail.com"
-                className="text-gray-500 hover:text-cyan-400 transition-colors"
-              >
-                <FaEnvelope className="w-6 h-6" />
-              </a>
-            </div>
-          </motion.div>
+      {/* ── Footer ──────────────────────────────── */}
+      <footer className="border-t border-border py-8 px-6">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-dim">© {mounted ? new Date().getFullYear() : '2026'} {HERO.name}</p>
+          <div className="flex gap-8">
+            {HERO.linkedin && <a href={HERO.linkedin} target="_blank" rel="noopener noreferrer" className="text-xs text-dim hover:text-fg transition-colors duration-300 cursor-pointer tracking-widest uppercase">LinkedIn</a>}
+            {HERO.github && <a href={HERO.github} target="_blank" rel="noopener noreferrer" className="text-xs text-dim hover:text-fg transition-colors duration-300 cursor-pointer tracking-widest uppercase">GitHub</a>}
+            {HERO.email && <a href={`mailto:${HERO.email}`} className="text-xs text-dim hover:text-fg transition-colors duration-300 cursor-pointer tracking-widest uppercase">Email</a>}
+          </div>
         </div>
       </footer>
+
     </div>
   )
 }
 
 export default function Home() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-bg" />}>
       <HomeContent />
     </Suspense>
   )
 }
-

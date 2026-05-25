@@ -1,25 +1,20 @@
 import type { Metadata } from 'next'
-import { Rajdhani, Orbitron } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import './globals.css'
+import { ThemeProvider } from '@/components/ThemeProvider'
 
-const rajdhani = Rajdhani({
+const inter = Inter({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-rajdhani'
-})
-
-const orbitron = Orbitron({
-  subsets: ['latin'],
-  weight: ['400', '700', '900'],
-  variable: '--font-orbitron'
+  variable: '--font-inter'
 })
 
 export const metadata: Metadata = {
-  title: 'Venkata Siva Lalitaaditya Duggi - Futuristic Portfolio',
-  description: 'Futuristic portfolio of Venkata Siva Lalitaaditya Duggi - B.Tech Computer Science student and Vice President of VIT-AP Newspaper Club. Experience the future of web design.',
-  keywords: 'portfolio, computer science, web development, futuristic design, VIT-AP, technology',
+  title: 'Venkata Siva Lalitaaditya Duggi - Portfolio',
+  description: 'AI/ML Developer & Full-Stack Engineer. B.Tech Computer Science (AI & ML) at VIT-AP. Building intelligent systems and production-ready platforms.',
+  keywords: 'AI/ML developer, full-stack engineer, portfolio, Next.js, TypeScript, Python, TensorFlow',
   authors: [{ name: 'Venkata Siva Lalitaaditya Duggi' }],
   verification: {
     google: 'qub0blP6jmR_z4vPfwxZHoVgu63yf5aTU_RjD1hdwCc',
@@ -37,11 +32,17 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className={`${rajdhani.variable} ${orbitron.variable} font-sans antialiased`}>
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans antialiased bg-bg text-fg transition-colors duration-300`}>
+        <ThemeProvider>
+        <div className="liquid-bg-element" />
+        
+
+
         {children}
         <Analytics />
         <SpeedInsights />
+        </ThemeProvider>
       </body>
     </html>
   )

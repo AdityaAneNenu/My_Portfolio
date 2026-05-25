@@ -1,0 +1,340 @@
+{
+  "hero": {
+    "name": "Venkata Siva Lalitaaditya Duggi",
+    "initials": "VSLD",
+    "role": "AI/ML Developer & Full-Stack Engineer",
+    "description": "Computer Science student specializing in AI & ML. I build web applications — from healthcare platforms to municipal complaint systems — with Next.js, TypeScript, and Firebase. Grand Finalist at Smart India Hackathon 2025.",
+    "github": "https://github.com/AdityaAneNenu",
+    "linkedin": "https://www.linkedin.com/in/vsld",
+    "email": "adityaduggi0@gmail.com"
+  },
+  "about": [
+    "As an AI/ML Developer, I specialize in building OpenAI-based chatbots and implementing machine learning models with TensorFlow and Scikit-learn. My expertise extends to deploying cloud-based solutions using AWS, with a strong foundation in software development, networking, and rapid prototyping in collaborative environments.",
+    "Currently serving as President of VIT-AP Newspaper Club, I lead initiatives combining creative writing and tech journalism. My technical journey includes developing multi-agentic chat systems, network optimization projects, and ML pipelines for stock prediction, achieving 90%+ classification accuracy across diverse applications."
+  ],
+  "stats": [
+    {
+      "value": "8.32",
+      "label": "CGPA"
+    },
+    {
+      "value": "6+",
+      "label": "Projects"
+    },
+    {
+      "value": "10+",
+      "label": "Hackathons"
+    },
+    {
+      "value": "4+",
+      "label": "Certifications"
+    }
+  ],
+  "skills": {
+    "Languages": [
+      "Python",
+      "Java",
+      "TypeScript",
+      "SQL",
+      "HTML/CSS"
+    ],
+    "AI / ML": [
+      "TensorFlow",
+      "PyTorch",
+      "Keras",
+      "Scikit-learn",
+      "OpenAI API"
+    ],
+    "Frameworks": [
+      "Next.js",
+      "React",
+      "React Native",
+      "Django",
+      "Expo"
+    ],
+    "Tools": [
+      "Git",
+      "AWS",
+      "Firebase",
+      "Supabase",
+      "Figma",
+      "VS Code"
+    ]
+  },
+  "certifications": [
+    "Oracle Generative AI — Jul 2025",
+    "Digital Skills: AI by Accenture — Sep 2024",
+    "Microsoft Azure AI Fundamentals — Jul 2024",
+    "AWS Cloud Foundations — Sep 2024"
+  ],
+  "experience": [
+    {
+      "title": "President",
+      "org": "VIT-AP Newspaper Club",
+      "period": "Aug 2025 — Present",
+      "description": "Led initiatives combining creative writing and tech journalism. Organized interactive sessions on innovation and public speaking."
+    },
+    {
+      "title": "Intern — RTTC BSNL",
+      "org": "Hyderabad",
+      "period": "Jun — Jul 2024",
+      "description": "Configured routers and VLAN switches across simulated campus networks. Optimized subnetting strategies improving traffic flow by 30%. Diagnosed network traffic using Wireshark for 10+ test cases."
+    }
+  ],
+  "achievements": [
+    {
+      "title": "Grand Finalist",
+      "event": "Smart India Hackathon 2025",
+      "detail": "SETU municipal complaint management system — SIH25151",
+      "date": "Dec 2025"
+    },
+    {
+      "title": "Runner-up",
+      "event": "Bharat Blockchain Yatra Hackathon",
+      "detail": "Polyversity blockchain innovation challenge",
+      "date": "Apr 2024"
+    },
+    {
+      "title": "Top 50",
+      "event": "Octopus Hackathon",
+      "detail": "Mood Garden — mental wellness application",
+      "date": "Sep — Nov 2025"
+    }
+  ],
+  "projects": [
+    {
+      "slug": "smartmedtracker",
+      "title": "SmartMedTracker",
+      "subtitle": "Healthcare Management Platform",
+      "period": "2025",
+      "description": "Full-stack web application for tracking hospital bed availability using Next.js 15, TypeScript, and Firebase, with an integrated disease symptom checker powered by TensorFlow.js.",
+      "stack": [
+        "Next.js 15",
+        "TypeScript",
+        "Firebase",
+        "TensorFlow.js"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "setu",
+      "title": "SETU",
+      "subtitle": "Municipal Complaint Management",
+      "period": "Dec 2025",
+      "description": "Complaint tracking platform for Smart India Hackathon 2025 (Grand Finalist — SIH25151) using Django REST Framework, React Native, and PostgreSQL with AI-powered features.",
+      "stack": [
+        "Django",
+        "React Native",
+        "PostgreSQL",
+        "AssemblyAI"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "money-mentor-ai",
+      "title": "Money Mentor AI",
+      "subtitle": "Financial Advisory Chat",
+      "period": "Apr — May 2025",
+      "description": "Responsive financial advisory chatbot using Next.js 15, React 19, and Tailwind CSS with AI API integration, achieving 95+ Lighthouse scores.",
+      "stack": [
+        "Next.js 15",
+        "React 19",
+        "TypeScript",
+        "AI API"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "multi-agentic-chat-system",
+      "title": "Multi-Agentic Chat System",
+      "subtitle": "Structured AI Results",
+      "period": "Apr 2025",
+      "description": "Modular AI chatbot using Python and OpenAI API with multiple task-specific agents. 90%+ classification accuracy across 200+ sample queries.",
+      "stack": [
+        "Python",
+        "OpenAI API",
+        "NLP",
+        "ML"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "dreamscribe",
+      "title": "DreamScribe",
+      "subtitle": "AI-Powered Dream Journal",
+      "period": "May — Jul 2025",
+      "description": "Cross-platform dream journal with AI-powered analysis, emotional breakdowns, symbol identification, built with React Native and Supabase.",
+      "stack": [
+        "React Native",
+        "Expo",
+        "Supabase",
+        "TypeScript"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "campus-area-network",
+      "title": "Campus Area Network",
+      "subtitle": "VLAN Implementation",
+      "period": "Jun — Jul 2024",
+      "description": "College campus network across five floors with comprehensive VLAN implementation and security features during internship at RTTC BSNL, Hyderabad.",
+      "stack": [
+        "Cisco Router",
+        "VLAN",
+        "Network Security",
+        "DHCP"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "explainanything",
+      "title": "ExplainAnything",
+      "subtitle": "Open Source Project",
+      "period": "2026",
+      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
+      "stack": [
+        "TypeScript"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "stem",
+      "title": "STEM",
+      "subtitle": "Open Source Project",
+      "period": "2026",
+      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
+      "stack": [
+        "TypeScript"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "enterprise",
+      "title": "Enterprise",
+      "subtitle": "Open Source Project",
+      "period": "2026",
+      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
+      "stack": [
+        "TypeScript"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "cinetrack",
+      "title": "Cinetrack",
+      "subtitle": "Open Source Project",
+      "period": "2026",
+      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
+      "stack": [
+        "JavaScript"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "maska-tm",
+      "title": "Maska tm",
+      "subtitle": "Open Source Project",
+      "period": "2026",
+      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
+      "stack": [
+        "TypeScript"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "inavra",
+      "title": "Inavra",
+      "subtitle": "Open Source Project",
+      "period": "2026",
+      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
+      "stack": [
+        "Python"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "judixai",
+      "title": "Judixai",
+      "subtitle": "Open Source Project",
+      "period": "2026",
+      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
+      "stack": [
+        "TypeScript"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "fetal-movement-tracker",
+      "title": "Fetal movement tracker",
+      "subtitle": "Open Source Project",
+      "period": "2025",
+      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
+      "stack": [
+        "TypeScript"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "kasparro-backend-venkata-siva-lalitaaditya-duggi",
+      "title": "Kasparro backend venkata siva lalitaaditya duggi",
+      "subtitle": "Open Source Project",
+      "period": "2025",
+      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
+      "stack": [
+        "Python"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "knowledgebaseai",
+      "title": "KnowledgeBaseAI",
+      "subtitle": "Open Source Project",
+      "period": "2025",
+      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
+      "stack": [
+        "Python"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "netflix-startup-page",
+      "title": "Netflix Startup Page",
+      "subtitle": "This is a Netflix starting page clone",
+      "period": "2024",
+      "description": "This is a Netflix starting page clone",
+      "stack": [
+        "HTML"
+      ],
+      "github": "",
+      "demo": ""
+    },
+    {
+      "slug": "fake-news-detector",
+      "title": "Fake News Detector",
+      "subtitle": "Open Source Project",
+      "period": "2025",
+      "description": "A project built by AdityaAneNenu. Checkout the repository for more details.",
+      "stack": [
+        "Jupyter Notebook"
+      ],
+      "github": "",
+      "demo": ""
+    }
+  ]
+}
