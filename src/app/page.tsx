@@ -311,7 +311,7 @@ const HomeContent = () => {
 
       {/* ── Tech Stack Marquee ──────────────────── */}
       <div className="py-6 border-y border-border">
-        <Marquee items={['Next.js', 'TypeScript', 'Python', 'TensorFlow', 'React Native', 'Firebase', 'Django', 'PostgreSQL', 'AWS', 'Supabase']} />
+        <Marquee items={Object.values(SKILLS).flat()} />
       </div>
 
       {/* ── About ───────────────────────────────── */}

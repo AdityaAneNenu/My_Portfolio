@@ -86,6 +86,10 @@ body {
   animation-play-state: paused;
 }
 
+.marquee-stroke {
+  -webkit-text-stroke: 1px rgba(var(--color-fg), 0.1);
+}
+
 /* ── Liquid Iridescent Background ──────────────── */
 @keyframes liquid-bg {
   0% {

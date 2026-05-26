@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
+// Sanitize user input to prevent HTML injection in emails
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { name, email, subject, message } = await request.json();
@@ -67,19 +77,19 @@ export async function POST(request: NextRequest) {
           
           <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="color: #ff783c; margin-top: 0;">Contact Details:</h3>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Subject:</strong> ${subject}</p>
+            <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+            <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+            <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
           </div>
           
           <div style="background-color: #fff; padding: 20px; border-left: 4px solid #ff783c; margin: 20px 0;">
             <h3 style="color: #333; margin-top: 0;">Message:</h3>
-            <p style="line-height: 1.6; color: #555;">${message.replace(/\n/g, '<br>')}</p>
+            <p style="line-height: 1.6; color: #555;">${escapeHtml(message).replace(/\n/g, '<br>')}</p>
           </div>
           
           <div style="margin-top: 30px; padding: 15px; background-color: #e8f4f8; border-radius: 8px;">
             <p style="margin: 0; color: #666; font-size: 14px;">
-              <strong>Reply to:</strong> ${email}<br>
+              <strong>Reply to:</strong> ${escapeHtml(email)}<br>
               <strong>Received:</strong> ${new Date().toLocaleString()}
             </p>
           </div>

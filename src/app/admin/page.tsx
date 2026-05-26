@@ -90,6 +90,19 @@ export default function AdminPage() {
   const [editingExperience, setEditingExperience] = useState<any | null>(null);
   const [editingAchievement, setEditingAchievement] = useState<any | null>(null);
   const [isAddingNew, setIsAddingNew] = useState<boolean>(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    show: boolean;
+    type: 'project' | 'experience' | 'achievement' | 'category';
+    id: any;
+    title: string;
+  }>({
+    show: false,
+    type: 'project',
+    id: null,
+    title: ''
+  });
 
   // Load session from localStorage on mount and verify securely on the server
   useEffect(() => {
@@ -284,12 +297,38 @@ export default function AdminPage() {
     setIsAddingNew(false);
   };
 
-  const handleDeleteProject = (slug: string) => {
-    if (confirm('Are you sure you want to delete this project?')) {
-      const updatedProjects = portfolioData.projects.filter((p: any) => p.slug !== slug);
+  const handleDeleteProject = (slug: string, title: string) => {
+    setDeleteConfirm({
+      show: true,
+      type: 'project',
+      id: slug,
+      title: title
+    });
+  };
+
+  const executeDelete = () => {
+    const { type, id } = deleteConfirm;
+
+    if (type === 'project') {
+      const updatedProjects = portfolioData.projects.filter((p: any) => p.slug !== id);
       const updatedData = { ...portfolioData, projects: updatedProjects };
       saveAllData(updatedData);
+    } else if (type === 'experience') {
+      const updatedExp = portfolioData.experience.filter((_: any, i: number) => i !== id);
+      const updatedData = { ...portfolioData, experience: updatedExp };
+      saveAllData(updatedData);
+    } else if (type === 'achievement') {
+      const updatedAch = portfolioData.achievements.filter((_: any, i: number) => i !== id);
+      const updatedData = { ...portfolioData, achievements: updatedAch };
+      saveAllData(updatedData);
+    } else if (type === 'category') {
+      const updatedSkills = { ...portfolioData.skills };
+      delete updatedSkills[id];
+      const updatedData = { ...portfolioData, skills: updatedSkills };
+      saveAllData(updatedData);
     }
+
+    setDeleteConfirm(prev => ({ ...prev, show: false }));
   };
 
   const startEditProject = (project: any) => {
@@ -332,12 +371,12 @@ export default function AdminPage() {
   };
 
   const handleRemoveSkillCategory = (category: string) => {
-    if (confirm(`Are you sure you want to delete the "${category}" category and all its skills?`)) {
-      const updatedSkills = { ...portfolioData.skills };
-      delete updatedSkills[category];
-      const updatedData = { ...portfolioData, skills: updatedSkills };
-      saveAllData(updatedData);
-    }
+    setDeleteConfirm({
+      show: true,
+      type: 'category',
+      id: category,
+      title: `Skill Category: ${category}`
+    });
   };
 
   // ----------------------------------------------------
@@ -362,12 +401,13 @@ export default function AdminPage() {
     setIsAddingNew(false);
   };
 
-  const handleDeleteExperience = (idx: number) => {
-    if (confirm('Delete this experience timeline item?')) {
-      const updatedExp = portfolioData.experience.filter((_: any, i: number) => i !== idx);
-      const updatedData = { ...portfolioData, experience: updatedExp };
-      saveAllData(updatedData);
-    }
+  const handleDeleteExperience = (idx: number, title: string) => {
+    setDeleteConfirm({
+      show: true,
+      type: 'experience',
+      id: idx,
+      title: title
+    });
   };
 
   const handleSaveAchievement = (e: React.FormEvent) => {
@@ -389,12 +429,13 @@ export default function AdminPage() {
     setIsAddingNew(false);
   };
 
-  const handleDeleteAchievement = (idx: number) => {
-    if (confirm('Delete this achievement?')) {
-      const updatedAch = portfolioData.achievements.filter((_: any, i: number) => i !== idx);
-      const updatedData = { ...portfolioData, achievements: updatedAch };
-      saveAllData(updatedData);
-    }
+  const handleDeleteAchievement = (idx: number, title: string) => {
+    setDeleteConfirm({
+      show: true,
+      type: 'achievement',
+      id: idx,
+      title: title
+    });
   };
 
   // ----------------------------------------------------
@@ -778,7 +819,7 @@ export default function AdminPage() {
                                   Edit
                                 </button>
                                 <button
-                                  onClick={() => handleDeleteProject(project.slug)}
+                                  onClick={() => handleDeleteProject(project.slug, project.title)}
                                   className="text-[9px] tracking-widest uppercase px-3 py-2 border border-border hover:border-red-500 hover:text-red-500 bg-bg transition-colors cursor-pointer flex items-center gap-1.5"
                                 >
                                   <Icons.Trash />
@@ -796,16 +837,60 @@ export default function AdminPage() {
                       <div className="space-y-8">
                         <div className="flex justify-between items-center border-b border-border pb-4">
                           <h2 className="text-xs tracking-[0.2em] uppercase text-muted font-bold">Expertise Categories</h2>
-                          <button
-                            onClick={() => {
-                              const name = prompt('Enter new category name (e.g. Databases, Cloud):');
-                              if (name) handleAddSkillCategory(name);
-                            }}
-                            className="text-[10px] font-bold text-fg border border-border px-4 py-2.5 hover:bg-fg hover:text-bg transition-all duration-200 cursor-pointer tracking-widest uppercase flex items-center gap-2"
-                          >
-                            <Icons.Plus />
-                            Add Category
-                          </button>
+                          <div className="flex items-center gap-2">
+                            {isAddingCategory ? (
+                              <>
+                                <input
+                                  type="text"
+                                  autoFocus
+                                  value={newCategoryName}
+                                  onChange={(e) => setNewCategoryName(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && newCategoryName.trim()) {
+                                      handleAddSkillCategory(newCategoryName.trim());
+                                      setNewCategoryName('');
+                                      setIsAddingCategory(false);
+                                    }
+                                    if (e.key === 'Escape') {
+                                      setNewCategoryName('');
+                                      setIsAddingCategory(false);
+                                    }
+                                  }}
+                                  placeholder="e.g. Databases, Cloud"
+                                  className="bg-fg/[0.01] dark:bg-bg/20 border border-border focus:border-accent text-fg rounded-none px-3 py-2 outline-none text-[10px] tracking-widest uppercase w-48 transition-colors"
+                                />
+                                <button
+                                  onClick={() => {
+                                    if (newCategoryName.trim()) {
+                                      handleAddSkillCategory(newCategoryName.trim());
+                                      setNewCategoryName('');
+                                      setIsAddingCategory(false);
+                                    }
+                                  }}
+                                  className="text-[10px] font-bold text-bg bg-accent border border-accent px-3 py-2 hover:bg-fg hover:border-fg hover:text-bg transition-all duration-200 cursor-pointer tracking-widest uppercase"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setNewCategoryName('');
+                                    setIsAddingCategory(false);
+                                  }}
+                                  className="text-[10px] font-bold text-fg border border-border px-3 py-2 hover:bg-fg hover:text-bg transition-all duration-200 cursor-pointer tracking-widest uppercase"
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                onClick={() => setIsAddingCategory(true)}
+                                className="text-[10px] font-bold text-fg border border-border px-4 py-2.5 hover:bg-fg hover:text-bg transition-all duration-200 cursor-pointer tracking-widest uppercase flex items-center gap-2"
+                              >
+                                <Icons.Plus />
+                                Add Category
+                              </button>
+                            )}
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -923,7 +1008,7 @@ export default function AdminPage() {
                                     Edit
                                   </button>
                                   <button
-                                    onClick={() => handleDeleteExperience(idx)}
+                                    onClick={() => handleDeleteExperience(idx, `${exp.title} at ${exp.org}`)}
                                     className="text-[9px] tracking-widest uppercase px-3 py-2 border border-border hover:border-red-500 hover:text-red-500 bg-bg transition-all cursor-pointer flex items-center gap-1.5"
                                   >
                                     <Icons.Trash />
@@ -979,7 +1064,7 @@ export default function AdminPage() {
                                     Edit
                                   </button>
                                   <button
-                                    onClick={() => handleDeleteAchievement(idx)}
+                                    onClick={() => handleDeleteAchievement(idx, ach.title)}
                                     className="text-[9px] tracking-widest uppercase px-3 py-2 border border-border hover:border-red-500 hover:text-red-500 bg-bg transition-all cursor-pointer flex items-center gap-1.5"
                                   >
                                     <Icons.Trash />
@@ -1000,7 +1085,7 @@ export default function AdminPage() {
                         <div className="border border-border p-6 bg-fg/[0.005] space-y-6">
                           <h3 className="text-xs tracking-widest uppercase text-accent font-bold border-b border-border pb-3 flex items-center gap-2">
                             <Icons.User />
-                            Hero Profile copy
+                            Hero Profile
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                             <div>
@@ -1552,6 +1637,65 @@ export default function AdminPage() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── MODAL 4: CUSTOM DELETE CONFIRMATION ───────────────────────────────── */}
+      <AnimatePresence>
+        {deleteConfirm.show && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDeleteConfirm(prev => ({ ...prev, show: false }))}
+              className="fixed inset-0 bg-bg/80 backdrop-blur-sm"
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 15 }}
+              transition={{ type: 'spring', stiffness: 150, damping: 20 }}
+              className="w-full max-w-md bg-bg border border-border p-6 sm:p-8 relative shadow-2xl z-10"
+            >
+              {/* Red visual accent line for danger state */}
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-red-500" />
+
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 text-red-500">
+                  <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
+                    <Icons.Trash />
+                  </div>
+                  <h3 className="text-base font-extrabold tracking-tight uppercase">
+                    Confirm Deletion
+                  </h3>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs text-muted tracking-widest uppercase font-mono">WARNING: this action cannot be undone</p>
+                  <p className="text-sm leading-relaxed text-fg">
+                    Are you sure you want to delete <strong className="font-extrabold text-accent">{deleteConfirm.title}</strong>? This will immediately remove it from your portfolio and write the changes to disk.
+                  </p>
+                </div>
+
+                <div className="flex gap-3 pt-4 border-t border-border">
+                  <button
+                    onClick={executeDelete}
+                    className="text-xs font-bold text-white bg-red-600 border border-red-600 px-6 py-3.5 hover:bg-red-700 hover:border-red-700 transition-all duration-200 cursor-pointer tracking-widest uppercase rounded-none"
+                  >
+                    CONFIRM DELETE
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirm(prev => ({ ...prev, show: false }))}
+                    className="text-xs font-bold text-fg border border-border px-6 py-3.5 hover:bg-fg hover:text-bg transition-all duration-200 cursor-pointer tracking-widest uppercase rounded-none"
+                  >
+                    CANCEL
+                  </button>
+                </div>
+              </div>
             </motion.div>
           </div>
         )}
