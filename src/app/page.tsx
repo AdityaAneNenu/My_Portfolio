@@ -18,6 +18,7 @@ import {
   EXPERIENCE,
   ACHIEVEMENTS
 } from '@/data/projects'
+import * as staticData from '@/data/projects'
 import Link from 'next/link'
 import ThemeToggle from '@/components/ThemeToggle'
 
@@ -35,6 +36,41 @@ const HomeContent = () => {
   const [mounted, setMounted] = useState(false)
   const [activeSection, setActiveSection] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Live Data State with fallbacks to static imports
+  const [liveData, setLiveData] = useState({
+    hero: staticData.HERO,
+    projects: staticData.PROJECTS,
+    about: staticData.ABOUT,
+    stats: staticData.STATS,
+    skills: staticData.SKILLS,
+    certifications: staticData.CERTIFICATIONS,
+    experience: staticData.EXPERIENCE,
+    achievements: staticData.ACHIEVEMENTS
+  });
+
+  useEffect(() => {
+    fetch('/api/admin/portfolio-data')
+      .then(res => {
+        if (res.ok) return res.json();
+        throw new Error('Failed to fetch');
+      })
+      .then(data => {
+        if (data.hero && data.projects && data.skills) {
+          setLiveData(data);
+        }
+      })
+      .catch(err => console.error('Error loading live portfolio data:', err));
+  }, []);
+
+  const HERO = liveData.hero;
+  const PROJECTS = liveData.projects;
+  const ABOUT = liveData.about;
+  const STATS = liveData.stats;
+  const SKILLS = liveData.skills;
+  const CERTIFICATIONS = liveData.certifications;
+  const EXPERIENCE = liveData.experience;
+  const ACHIEVEMENTS = liveData.achievements;
 
   useEffect(() => {
     setMounted(true)

@@ -113,8 +113,8 @@
         "Firebase",
         "TensorFlow.js"
       ],
-      "github": "",
-      "demo": ""
+      "github": "https://github.com/AdityaAneNenu/doctor-availability-system",
+      "demo": "https://smartmedtracker.vercel.app"
     },
     {
       "slug": "setu",

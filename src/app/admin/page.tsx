@@ -189,9 +189,46 @@ export default function AdminPage() {
     setPortfolioData(null);
   };
 
+  const normalizeUrl = (url: string): string => {
+    if (!url) return '';
+    const trimmed = url.trim();
+    if (trimmed === '') return '';
+    
+    // If it's an email, check if it starts with mailto:
+    if (trimmed.includes('@') && !trimmed.includes('/')) {
+      if (trimmed.toLowerCase().startsWith('mailto:')) {
+        return trimmed;
+      }
+      return `mailto:${trimmed}`;
+    }
+
+    // If it already starts with http:// or https://, return it
+    if (/^https?:\/\//i.test(trimmed)) {
+      return trimmed;
+    }
+    
+    // Otherwise, prepend https://
+    return `https://${trimmed}`;
+  };
+
   // Universal Save/Update Handler
   const saveAllData = async (updatedData: any, silent = false) => {
     setIsSaving(true);
+
+    // Deep copy and normalize link fields
+    const sanitizedData = JSON.parse(JSON.stringify(updatedData));
+    if (sanitizedData.hero) {
+      if (sanitizedData.hero.github) sanitizedData.hero.github = normalizeUrl(sanitizedData.hero.github);
+      if (sanitizedData.hero.linkedin) sanitizedData.hero.linkedin = normalizeUrl(sanitizedData.hero.linkedin);
+    }
+    if (sanitizedData.projects) {
+      sanitizedData.projects = sanitizedData.projects.map((proj: any) => ({
+        ...proj,
+        github: proj.github ? normalizeUrl(proj.github) : '',
+        demo: proj.demo ? normalizeUrl(proj.demo) : ''
+      }));
+    }
+
     try {
       const res = await fetch('/api/admin/portfolio-data', {
         method: 'POST',
@@ -200,11 +237,11 @@ export default function AdminPage() {
           'x-admin-id': authId,
           'x-admin-pass': authPass
         },
-        body: JSON.stringify(updatedData)
+        body: JSON.stringify(sanitizedData)
       });
       const result = await res.json();
       if (res.ok) {
-        setPortfolioData(updatedData);
+        setPortfolioData(sanitizedData);
         if (!silent) {
           showToast('Changes successfully updated on disk!', 'success');
         }

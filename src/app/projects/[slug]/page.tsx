@@ -4,6 +4,10 @@ import Link from 'next/link';
 import TextReveal, { FadeUp } from '@/components/TextReveal';
 import MagneticButton from '@/components/MagneticButton';
 import ThemeToggle from '@/components/ThemeToggle';
+import path from 'path';
+import fs from 'fs/promises';
+
+export const revalidate = 0; // Force dynamic server rendering
 
 export function generateStaticParams() {
   return PROJECTS.map((project) => ({
@@ -13,7 +17,21 @@ export function generateStaticParams() {
 
 export default async function ProjectPage(props: { params: Promise<{ slug: string }> }) {
   const params = await props.params;
-  const project = PROJECTS.find((p) => p.slug === params.slug);
+  
+  // Read live projects from disk
+  const filePath = path.join(process.cwd(), 'src', 'data', 'portfolio-data.json');
+  let liveProjects = PROJECTS;
+  try {
+    const fileData = await fs.readFile(filePath, 'utf-8');
+    const parsed = JSON.parse(fileData);
+    if (parsed.projects) {
+      liveProjects = parsed.projects;
+    }
+  } catch (e) {
+    console.error('Error reading live projects in details page:', e);
+  }
+
+  const project = liveProjects.find((p) => p.slug === params.slug);
 
   if (!project) {
     notFound();

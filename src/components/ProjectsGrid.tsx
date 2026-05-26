@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import TextReveal, { FadeUp } from '@/components/TextReveal';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -11,7 +11,22 @@ interface ProjectsGridProps {
   projects: Project[];
 }
 
-export default function ProjectsGrid({ projects }: ProjectsGridProps) {
+export default function ProjectsGrid({ projects: initialProjects }: ProjectsGridProps) {
+  const [liveProjects, setLiveProjects] = useState(initialProjects);
+
+  useEffect(() => {
+    fetch('/api/admin/portfolio-data')
+      .then(res => {
+        if (res.ok) return res.json();
+        throw new Error('Failed to fetch');
+      })
+      .then(data => {
+        if (data.projects) setLiveProjects(data.projects);
+      })
+      .catch(err => console.error('Error loading live projects:', err));
+  }, []);
+
+  const projects = liveProjects;
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
   
