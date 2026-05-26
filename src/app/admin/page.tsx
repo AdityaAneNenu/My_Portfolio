@@ -137,12 +137,19 @@ export default function AdminPage() {
   const fetchPortfolioData = async () => {
     setIsLoadingData(true);
     try {
-      const res = await fetch('/api/admin/portfolio-data');
+      const res = await fetch(`/api/admin/portfolio-data?t=${Date.now()}`, {
+        cache: 'no-store'
+      });
       if (res.ok) {
         const data = await res.json();
         setPortfolioData(data);
       } else {
-        showToast('Failed to load portfolio data', 'error');
+        let errMsg = 'Failed to load portfolio data';
+        try {
+          const errData = await res.json();
+          errMsg = errData.error || errMsg;
+        } catch (_) {}
+        showToast(`${errMsg} (Status ${res.status})`, 'error');
       }
     } catch (err) {
       showToast('Network error loading data', 'error');
@@ -252,14 +259,19 @@ export default function AdminPage() {
         },
         body: JSON.stringify(sanitizedData)
       });
-      const result = await res.json();
+      
       if (res.ok) {
         setPortfolioData(sanitizedData);
         if (!silent) {
           showToast('Changes successfully updated on disk!', 'success');
         }
       } else {
-        showToast(result.error || 'Save failed', 'error');
+        let errMsg = 'Save failed';
+        try {
+          const result = await res.json();
+          errMsg = result.error || errMsg;
+        } catch (_) {}
+        showToast(`${errMsg} (Status ${res.status})`, 'error');
       }
     } catch (err) {
       showToast('Network error during save', 'error');

@@ -2,7 +2,38 @@ import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import fs from 'fs/promises';
 
+export const dynamic = 'force-dynamic';
+
 const filePath = path.join(process.cwd(), 'src', 'data', 'portfolio-data.json');
+
+// Helper to write file atomically
+async function writeJsonAtomic(filePath: string, data: any) {
+  const tempPath = `${filePath}.${Date.now()}.tmp`;
+  const jsonString = JSON.stringify(data, null, 2);
+  
+  // Write to temporary file
+  await fs.writeFile(tempPath, jsonString, 'utf-8');
+  
+  // Rename temp file to target file (atomic operation)
+  // On Windows, retry up to 5 times with a 100ms delay to prevent EBUSY/lock issues
+  let attempts = 5;
+  while (attempts > 0) {
+    try {
+      await fs.rename(tempPath, filePath);
+      return;
+    } catch (err: any) {
+      attempts--;
+      if (attempts === 0) {
+        // Clean up temp file
+        try {
+          await fs.unlink(tempPath);
+        } catch (_) {}
+        throw err;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
+}
 
 // GET: Read portfolio data
 export async function GET() {
@@ -10,7 +41,7 @@ export async function GET() {
     const data = await fs.readFile(filePath, 'utf-8');
     return NextResponse.json(JSON.parse(data), { status: 200 });
   } catch (error) {
-    console.error('Error reading portfolio data:', error);
+    console.error('Error reading portfolio data:', error instanceof Error ? error.stack : error);
     return NextResponse.json(
       { error: 'Failed to read portfolio data' },
       { status: 500 }
@@ -45,15 +76,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Write back to local file on disk
-    await fs.writeFile(filePath, JSON.stringify(newData, null, 2), 'utf-8');
+    // Write back to local file on disk atomically
+    await writeJsonAtomic(filePath, newData);
 
     return NextResponse.json(
       { message: 'Portfolio data updated successfully!' },
       { status: 200 }
     );
   } catch (error) {
-    console.error('Error writing portfolio data:', error);
+    console.error('Error writing portfolio data:', error instanceof Error ? error.stack : error);
     return NextResponse.json(
       { error: 'Failed to save portfolio data' },
       { status: 500 }

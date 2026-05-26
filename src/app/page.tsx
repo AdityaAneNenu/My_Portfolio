@@ -50,7 +50,9 @@ const HomeContent = () => {
   });
 
   useEffect(() => {
-    fetch('/api/admin/portfolio-data')
+    fetch(`/api/admin/portfolio-data?t=${Date.now()}`, {
+      cache: 'no-store'
+    })
       .then(res => {
         if (res.ok) return res.json();
         throw new Error('Failed to fetch');
