@@ -49,6 +49,10 @@ export const defaultPortfolioData: PortfolioData = portfolioDataJson as unknown 
  */
 export async function fetchPortfolioData(): Promise<PortfolioData> {
   try {
+    if (!db) {
+      console.warn('Firestore is not initialized. Using bundled fallback.');
+      return defaultPortfolioData;
+    }
     const docRef = doc(db, 'portfolio', 'main');
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {

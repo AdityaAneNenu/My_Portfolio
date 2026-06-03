@@ -109,6 +109,7 @@ export default function AdminPage() {
 
   // Listen to Firebase Auth state
   useEffect(() => {
+    if (!auth) return;
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setIsLoggedIn(true);
