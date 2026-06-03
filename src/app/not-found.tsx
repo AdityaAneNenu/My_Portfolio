@@ -5,28 +5,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import ThemeToggle from '@/components/ThemeToggle';
 import MagneticButton from '@/components/MagneticButton';
-import { HERO as staticHero } from '@/data/projects';
+import { defaultPortfolioData, fetchPortfolioData } from '@/lib/firebase-data';
 
 export default function NotFound() {
   const [mounted, setMounted] = useState(false);
-  const [hero, setHero] = useState(staticHero);
+  const [hero, setHero] = useState(defaultPortfolioData.hero);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     
-    // Fetch live data on mount to ensure initials/socials are correct
-    fetch('/api/admin/portfolio-data')
-      .then(res => {
-        if (res.ok) return res.json();
-        throw new Error('Failed to fetch');
-      })
-      .then(data => {
-        if (data.hero) {
-          setHero(data.hero);
-        }
-      })
-      .catch(err => console.error('Error fetching live portfolio data for 404 page:', err));
+    // Fetch live data from Firestore
+    fetchPortfolioData().then(data => {
+      if (data.hero) {
+        setHero(data.hero);
+      }
+    });
   }, []);
 
   // Lock body scroll when mobile menu is open

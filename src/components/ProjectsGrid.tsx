@@ -5,27 +5,19 @@ import Link from 'next/link';
 import TextReveal, { FadeUp } from '@/components/TextReveal';
 import ThemeToggle from '@/components/ThemeToggle';
 import MagneticButton from '@/components/MagneticButton';
-import { Project } from '@/data/projects';
+import { fetchPortfolioData, type PortfolioData } from '@/lib/firebase-data';
 
 interface ProjectsGridProps {
-  projects: Project[];
+  projects: PortfolioData['projects'];
 }
 
 export default function ProjectsGrid({ projects: initialProjects }: ProjectsGridProps) {
   const [liveProjects, setLiveProjects] = useState(initialProjects);
 
   useEffect(() => {
-    fetch(`/api/admin/portfolio-data?t=${Date.now()}`, {
-      cache: 'no-store'
-    })
-      .then(res => {
-        if (res.ok) return res.json();
-        throw new Error('Failed to fetch');
-      })
-      .then(data => {
-        if (data.projects) setLiveProjects(data.projects);
-      })
-      .catch(err => console.error('Error loading live projects:', err));
+    fetchPortfolioData().then(data => {
+      if (data.projects) setLiveProjects(data.projects);
+    });
   }, []);
 
   const projects = liveProjects;

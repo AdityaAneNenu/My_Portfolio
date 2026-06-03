@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import ThemeToggle from '@/components/ThemeToggle';
+import { auth, db } from '@/lib/firebase';
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import portfolioDataJson from '@/data/portfolio-data.json';
 
 // ── Clean SVG Icons ─────────────────────────────────────────────────────────
 const Icons = {
@@ -69,14 +73,13 @@ export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [id, setId] = useState('');
   const [passcode, setPasscode] = useState('');
-  const [authId, setAuthId] = useState('');
-  const [authPass, setAuthPass] = useState('');
   const [loginError, setLoginError] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   // Data states
   const [portfolioData, setPortfolioData] = useState<any>(null);
   const [isLoadingData, setIsLoadingData] = useState(false);
+  const [dataError, setDataError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({
     show: false,
@@ -104,55 +107,38 @@ export default function AdminPage() {
     title: ''
   });
 
-  // Load session from localStorage on mount and verify securely on the server
+  // Listen to Firebase Auth state
   useEffect(() => {
-    const savedId = localStorage.getItem('portfolio_admin_id');
-    const savedPass = localStorage.getItem('portfolio_admin_pass');
-    if (savedId && savedPass) {
-      const verifySession = async () => {
-        try {
-          const res = await fetch('/api/admin/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: savedId, passcode: savedPass }),
-          });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            setAuthId(savedId);
-            setAuthPass(savedPass);
-            setIsLoggedIn(true);
-          } else {
-            localStorage.removeItem('portfolio_admin_id');
-            localStorage.removeItem('portfolio_admin_pass');
-          }
-        } catch (err) {
-          console.error('Session verification failed:', err);
-        }
-      };
-      verifySession();
-    }
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
-  // Fetch data from API once logged in
+  // Fetch data from Firestore once logged in
   const fetchPortfolioData = async () => {
     setIsLoadingData(true);
+    setDataError(null);
     try {
-      const res = await fetch(`/api/admin/portfolio-data?t=${Date.now()}`, {
-        cache: 'no-store'
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setPortfolioData(data);
+      const docRef = doc(db, 'portfolio', 'main');
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setPortfolioData(docSnap.data());
       } else {
-        let errMsg = 'Failed to load portfolio data';
-        try {
-          const errData = await res.json();
-          errMsg = errData.error || errMsg;
-        } catch (_) {}
-        showToast(`${errMsg} (Status ${res.status})`, 'error');
+        // Seed with local JSON data if empty
+        await setDoc(docRef, portfolioDataJson);
+        setPortfolioData(portfolioDataJson);
+        showToast('Initialized database with local data', 'success');
       }
-    } catch (err) {
-      showToast('Network error loading data', 'error');
+    } catch (err: any) {
+      console.error(err);
+      const message = err?.message || 'Network error loading data';
+      setDataError(message);
+      showToast('Failed to load data from database', 'error');
     } finally {
       setIsLoadingData(false);
     }
@@ -178,35 +164,23 @@ export default function AdminPage() {
     setIsAuthenticating(true);
     setLoginError('');
     try {
-      const res = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, passcode }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        localStorage.setItem('portfolio_admin_id', id);
-        localStorage.setItem('portfolio_admin_pass', passcode);
-        setAuthId(id);
-        setAuthPass(passcode);
-        setIsLoggedIn(true);
-      } else {
-        setLoginError(data.error || 'Invalid ID or Passcode');
-      }
-    } catch (err) {
-      setLoginError('Error connecting to authentication server.');
+      await signInWithEmailAndPassword(auth, id, passcode);
+      // onAuthStateChanged will handle isLoggedIn state
+    } catch (err: any) {
+      console.error(err);
+      setLoginError(err.message || 'Invalid ID or Passcode');
     } finally {
       setIsAuthenticating(false);
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('portfolio_admin_id');
-    localStorage.removeItem('portfolio_admin_pass');
-    setAuthId('');
-    setAuthPass('');
-    setIsLoggedIn(false);
-    setPortfolioData(null);
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setPortfolioData(null);
+    } catch (err) {
+      console.error('Error signing out', err);
+    }
   };
 
   const normalizeUrl = (url: string): string => {
@@ -250,31 +224,16 @@ export default function AdminPage() {
     }
 
     try {
-      const res = await fetch('/api/admin/portfolio-data', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-id': authId,
-          'x-admin-pass': authPass
-        },
-        body: JSON.stringify(sanitizedData)
-      });
+      const docRef = doc(db, 'portfolio', 'main');
+      await setDoc(docRef, sanitizedData);
       
-      if (res.ok) {
-        setPortfolioData(sanitizedData);
-        if (!silent) {
-          showToast('Changes successfully updated on disk!', 'success');
-        }
-      } else {
-        let errMsg = 'Save failed';
-        try {
-          const result = await res.json();
-          errMsg = result.error || errMsg;
-        } catch (_) {}
-        showToast(`${errMsg} (Status ${res.status})`, 'error');
+      setPortfolioData(sanitizedData);
+      if (!silent) {
+        showToast('Changes successfully updated on database!', 'success');
       }
-    } catch (err) {
-      showToast('Network error during save', 'error');
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.message || 'Error saving data to database', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -683,7 +642,7 @@ export default function AdminPage() {
                 ) : (
                   <>
                     <Icons.Save />
-                    SAVE CHANGES TO FILE
+                    SAVE CHANGES TO DATABASE
                   </>
                 )}
               </button>
@@ -693,8 +652,29 @@ export default function AdminPage() {
 
         {isLoadingData || !portfolioData ? (
           <div className="min-h-[40vh] flex flex-col justify-center items-center gap-4">
-            <div className="w-8 h-8 border-2 border-accent border-t-transparent animate-spin rounded-full" />
-            <p className="text-xs text-muted tracking-widest uppercase font-mono">Resolving JSON definitions...</p>
+            {dataError ? (
+              <>
+                <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p className="text-sm text-red-400 font-semibold tracking-wide">Failed to load data</p>
+                <p className="text-xs text-muted max-w-md text-center font-mono">{dataError}</p>
+                <button
+                  onClick={fetchPortfolioData}
+                  className="mt-2 text-[10px] font-bold text-bg bg-accent border border-accent px-6 py-3 hover:bg-fg hover:border-fg hover:text-bg transition-all duration-300 cursor-pointer tracking-widest uppercase flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  RETRY CONNECTION
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="w-8 h-8 border-2 border-accent border-t-transparent animate-spin rounded-full" />
+                <p className="text-xs text-muted tracking-widest uppercase font-mono">Resolving JSON definitions...</p>
+              </>
+            )}
           </div>
         ) : (
           <div className="space-y-8">

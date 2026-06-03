@@ -8,17 +8,7 @@ import Marquee from '@/components/Marquee'
 import ContactForm from '@/components/ContactForm'
 import SpotlightCard from '@/components/SpotlightCard'
 import MagneticButton from '@/components/MagneticButton'
-import {
-  PROJECTS,
-  HERO,
-  ABOUT,
-  STATS,
-  SKILLS,
-  CERTIFICATIONS,
-  EXPERIENCE,
-  ACHIEVEMENTS
-} from '@/data/projects'
-import * as staticData from '@/data/projects'
+import { defaultPortfolioData, fetchPortfolioData } from '@/lib/firebase-data'
 import Link from 'next/link'
 import ThemeToggle from '@/components/ThemeToggle'
 
@@ -37,32 +27,13 @@ const HomeContent = () => {
   const [activeSection, setActiveSection] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Live Data State with fallbacks to static imports
-  const [liveData, setLiveData] = useState({
-    hero: staticData.HERO,
-    projects: staticData.PROJECTS,
-    about: staticData.ABOUT,
-    stats: staticData.STATS,
-    skills: staticData.SKILLS,
-    certifications: staticData.CERTIFICATIONS,
-    experience: staticData.EXPERIENCE,
-    achievements: staticData.ACHIEVEMENTS
-  });
+  // Live Data State with fallbacks to bundled defaults
+  const [liveData, setLiveData] = useState(defaultPortfolioData);
 
   useEffect(() => {
-    fetch(`/api/admin/portfolio-data?t=${Date.now()}`, {
-      cache: 'no-store'
-    })
-      .then(res => {
-        if (res.ok) return res.json();
-        throw new Error('Failed to fetch');
-      })
-      .then(data => {
-        if (data.hero && data.projects && data.skills) {
-          setLiveData(data);
-        }
-      })
-      .catch(err => console.error('Error loading live portfolio data:', err));
+    fetchPortfolioData().then(data => {
+      setLiveData(data);
+    });
   }, []);
 
   const HERO = liveData.hero;

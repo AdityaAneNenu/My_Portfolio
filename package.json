@@ -13,6 +13,7 @@
     "@types/nodemailer": "^6.4.17",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
+    "firebase": "^12.14.0",
     "framer-motion": "^11.11.17",
     "motion": "^12.40.0",
     "next": "^16.1.1",

@@ -1,40 +1,68 @@
-import { PROJECTS } from '@/data/projects';
-import { notFound } from 'next/navigation';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import TextReveal, { FadeUp } from '@/components/TextReveal';
 import MagneticButton from '@/components/MagneticButton';
 import ThemeToggle from '@/components/ThemeToggle';
-import path from 'path';
-import fs from 'fs/promises';
+import { defaultPortfolioData, fetchPortfolioData, type PortfolioData } from '@/lib/firebase-data';
 
-export const revalidate = 0; // Force dynamic server rendering
+type Project = PortfolioData['projects'][number];
 
-export function generateStaticParams() {
-  return PROJECTS.map((project) => ({
-    slug: project.slug,
-  }));
-}
+export default function ProjectPage() {
+  const params = useParams<{ slug: string }>();
+  const slug = params.slug;
 
-export default async function ProjectPage(props: { params: Promise<{ slug: string }> }) {
-  const params = await props.params;
-  
-  // Read live projects from disk
-  const filePath = path.join(process.cwd(), 'src', 'data', 'portfolio-data.json');
-  let liveProjects = PROJECTS;
-  try {
-    const fileData = await fs.readFile(filePath, 'utf-8');
-    const parsed = JSON.parse(fileData);
-    if (parsed.projects) {
-      liveProjects = parsed.projects;
-    }
-  } catch (e) {
-    console.error('Error reading live projects in details page:', e);
+  const [projects, setProjects] = useState(defaultPortfolioData.projects);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPortfolioData().then(data => {
+      if (data.projects) setProjects(data.projects);
+      setIsLoading(false);
+    });
+  }, []);
+
+  const project = projects.find((p) => p.slug === slug);
+
+  // Find adjacent projects for navigation
+  const projectIndex = project ? projects.indexOf(project) : -1;
+  const prevProject = projectIndex > 0 ? projects[projectIndex - 1] : null;
+  const nextProject = projectIndex < projects.length - 1 ? projects[projectIndex + 1] : null;
+
+  // Loading state
+  if (isLoading && !project) {
+    return (
+      <div className="min-h-screen bg-bg text-fg flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-2 border-accent border-t-transparent animate-spin rounded-full" />
+          <p className="text-xs text-muted tracking-widest uppercase font-mono">Loading project...</p>
+        </div>
+      </div>
+    );
   }
 
-  const project = liveProjects.find((p) => p.slug === params.slug);
-
+  // Project not found
   if (!project) {
-    notFound();
+    return (
+      <div className="min-h-screen bg-bg text-fg flex flex-col items-center justify-center px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <p className="text-8xl font-light text-muted/20 mb-4">404</p>
+          <h1 className="text-2xl font-bold mb-4">Project Not Found</h1>
+          <p className="text-muted text-sm mb-8">The project you&apos;re looking for doesn&apos;t exist.</p>
+          <MagneticButton href="/projects" className="text-sm font-semibold text-bg bg-accent border border-accent px-8 py-4
+            hover:bg-fg hover:border-fg hover:text-bg transition-all duration-300 cursor-pointer tracking-widest uppercase">
+            View All Projects
+          </MagneticButton>
+        </motion.div>
+      </div>
+    );
   }
 
   return (
@@ -42,11 +70,11 @@ export default async function ProjectPage(props: { params: Promise<{ slug: strin
       {/* ── Minimal Nav ──────────────────────────── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-bg/80 backdrop-blur-md border-b border-border/50 transition-colors duration-300">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
-          <Link href="/" className="text-sm font-semibold tracking-widest hover:text-accent transition-colors duration-300 flex items-center gap-2">
+          <Link href="/projects" className="text-sm font-semibold tracking-widest hover:text-accent transition-colors duration-300 flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            BACK
+            ALL PROJECTS
           </Link>
           <div className="flex items-center gap-4">
             <ThemeToggle />
@@ -56,6 +84,7 @@ export default async function ProjectPage(props: { params: Promise<{ slug: strin
 
       {/* ── Content ──────────────────────────────── */}
       <main className="pt-32 pb-24 px-6 max-w-4xl mx-auto">
+        {/* Header Section */}
         <div className="mb-16">
           <div className="text-xs tracking-[0.3em] uppercase text-accent mb-6">
             <FadeUp>{project.period}</FadeUp>
@@ -71,6 +100,7 @@ export default async function ProjectPage(props: { params: Promise<{ slug: strin
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 border-t border-border pt-12">
+          {/* Description */}
           <div className="md:col-span-8">
             <FadeUp delay={0.4}>
               <h2 className="text-xs tracking-[0.3em] uppercase text-muted mb-6">Overview</h2>
@@ -80,16 +110,21 @@ export default async function ProjectPage(props: { params: Promise<{ slug: strin
             </FadeUp>
           </div>
           
+          {/* Sidebar */}
           <div className="md:col-span-4 space-y-8">
+            {/* Technologies */}
             <FadeUp delay={0.5}>
               <h2 className="text-xs tracking-[0.3em] uppercase text-muted mb-6">Technologies</h2>
-              <ul className="space-y-4">
+              <div className="flex flex-wrap gap-2">
                 {project.stack.map((tech) => (
-                  <li key={tech} className="text-sm font-medium">
+                  <span
+                    key={tech}
+                    className="text-xs tracking-wider text-fg bg-accent/10 border border-accent/20 px-3 py-1.5 hover:bg-accent/20 transition-colors duration-200"
+                  >
                     {tech}
-                  </li>
+                  </span>
                 ))}
-              </ul>
+              </div>
             </FadeUp>
 
             {/* Links Section */}
@@ -135,6 +170,47 @@ export default async function ProjectPage(props: { params: Promise<{ slug: strin
             </FadeUp>
           </div>
         </div>
+
+        {/* ── Project Navigation ──────────────────── */}
+        {(prevProject || nextProject) && (
+          <FadeUp delay={0.7}>
+            <div className="mt-20 pt-12 border-t border-border">
+              <p className="text-xs tracking-[0.3em] uppercase text-muted mb-8">More Projects</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {prevProject && (
+                  <Link
+                    href={`/projects/${prevProject.slug}`}
+                    className="group p-6 border border-border hover:border-accent/30 hover:bg-fg/[0.02] transition-all duration-300"
+                  >
+                    <p className="text-xs text-muted tracking-widest uppercase mb-2 flex items-center gap-2">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                      Previous
+                    </p>
+                    <p className="font-bold text-fg group-hover:text-accent transition-colors duration-300">{prevProject.title}</p>
+                    <p className="text-xs text-muted mt-1">{prevProject.subtitle}</p>
+                  </Link>
+                )}
+                {nextProject && (
+                  <Link
+                    href={`/projects/${nextProject.slug}`}
+                    className="group p-6 border border-border hover:border-accent/30 hover:bg-fg/[0.02] transition-all duration-300 md:text-right md:ml-auto"
+                  >
+                    <p className="text-xs text-muted tracking-widest uppercase mb-2 flex items-center gap-2 md:justify-end">
+                      Next
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </p>
+                    <p className="font-bold text-fg group-hover:text-accent transition-colors duration-300">{nextProject.title}</p>
+                    <p className="text-xs text-muted mt-1">{nextProject.subtitle}</p>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </FadeUp>
+        )}
       </main>
     </div>
   );
