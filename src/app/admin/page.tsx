@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -121,7 +121,7 @@ export default function AdminPage() {
   }, []);
 
   // Fetch data from Firestore once logged in
-  const fetchPortfolioData = async () => {
+  const fetchPortfolioData = useCallback(async () => {
     setIsLoadingData(true);
     setDataError(null);
     try {
@@ -143,13 +143,13 @@ export default function AdminPage() {
     } finally {
       setIsLoadingData(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (isLoggedIn) {
       fetchPortfolioData();
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, fetchPortfolioData]);
 
   // Toast notifier helper
   const showToast = (message: string, type: 'success' | 'error') => {
@@ -1368,7 +1368,7 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[9px] tracking-widest uppercase text-muted mb-2 font-semibold">Timeline (e.g. "Dec 2025")</label>
+                    <label className="block text-[9px] tracking-widest uppercase text-muted mb-2 font-semibold">Timeline (e.g. &quot;Dec 2025&quot;)</label>
                     <input
                       type="text"
                       required

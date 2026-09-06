@@ -24,23 +24,34 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if email credentials are configured
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS ||
-        process.env.EMAIL_USER === 'your-email@gmail.com') {
+    const emailConfigured =
+      process.env.EMAIL_USER &&
+      process.env.EMAIL_PASS &&
+      process.env.EMAIL_USER !== 'your-email@gmail.com';
 
-      // For testing: Log the email content and return success
-      console.log('📧 EMAIL WOULD BE SENT:');
-      console.log('To: adityaduggi0@gmail.com');
-      console.log(`From: ${name} (${email})`);
-      console.log(`Subject: Portfolio Contact: ${subject}`);
-      console.log(`Message: ${message}`);
-      console.log('---');
+    if (!emailConfigured) {
+      // In development, log the message so the flow can be tested without SMTP.
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('📧 EMAIL WOULD BE SENT (dev fallback):');
+        console.log('To: adityaduggi0@gmail.com');
+        console.log(`From: ${name} (${email})`);
+        console.log(`Subject: Portfolio Contact: ${subject}`);
+        console.log(`Message: ${message}`);
+        console.log('---');
 
+        return NextResponse.json(
+          {
+            message: 'Message received (dev mode). Configure EMAIL_USER and EMAIL_PASS to actually send email.',
+          },
+          { status: 200 }
+        );
+      }
+
+      // In production, do not pretend the message was delivered.
+      console.error('Contact form submission failed: email credentials are not configured.');
       return NextResponse.json(
-        {
-          message: 'Email functionality is working! (Check server console for email content)',
-          note: 'To actually send emails, configure EMAIL_USER and EMAIL_PASS in .env.local'
-        },
-        { status: 200 }
+        { error: 'Email delivery is not configured. Please reach out directly at adityaduggi0@gmail.com.' },
+        { status: 503 }
       );
     }
 

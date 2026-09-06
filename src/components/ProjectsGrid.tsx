@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import TextReveal, { FadeUp } from '@/components/TextReveal';
 import ThemeToggle from '@/components/ThemeToggle';
-import MagneticButton from '@/components/MagneticButton';
 import { fetchPortfolioData, type PortfolioData } from '@/lib/firebase-data';
 
 interface ProjectsGridProps {

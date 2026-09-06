@@ -23,7 +23,6 @@ const NAV_ITEMS = [
 
 const HomeContent = () => {
   const searchParams = useSearchParams()
-  const [mounted, setMounted] = useState(false)
   const [activeSection, setActiveSection] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -45,9 +44,6 @@ const HomeContent = () => {
   const EXPERIENCE = liveData.experience;
   const ACHIEVEMENTS = liveData.achievements;
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
   const heroRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll()
 

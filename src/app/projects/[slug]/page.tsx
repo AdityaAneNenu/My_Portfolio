@@ -7,9 +7,7 @@ import { useParams } from 'next/navigation';
 import TextReveal, { FadeUp } from '@/components/TextReveal';
 import MagneticButton from '@/components/MagneticButton';
 import ThemeToggle from '@/components/ThemeToggle';
-import { defaultPortfolioData, fetchPortfolioData, type PortfolioData } from '@/lib/firebase-data';
-
-type Project = PortfolioData['projects'][number];
+import { defaultPortfolioData, fetchPortfolioData } from '@/lib/firebase-data';
 
 export default function ProjectPage() {
   const params = useParams<{ slug: string }>();
